@@ -7,7 +7,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
-// import StudyBuddy from './pages/StudyBuddy';
+import StudyBuddy from './pages/StudyBuddy';
 import Quizzes from './pages/Quizzes';
 import Flashcards from './pages/Flashcards';
 import ChatBot from './pages/ChatBot';
@@ -71,11 +71,11 @@ function App() {
                 }
               </DashboardLayout>
             } />
-            {/* <Route path="/studybuddy" element={
+            <Route path="/studybuddy" element={
               <DashboardLayout>
                 <StudyBuddy />
               </DashboardLayout>
-            } /> */}
+            } />
             <Route path="/quizzes" element={
               <DashboardLayout>
                 <Quizzes />
