@@ -19,6 +19,7 @@ export const useChatStore = create((set, get) => ({
 
   sendMessage: async ({ sessionId, user_input, class_num, subject, chapter }) => {
     set({ loading: true, error: null });
+    console.log("sessionId,",sessionId);
 
     try {
       // console.log("before calling api",{sessionId,
