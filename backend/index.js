@@ -6,11 +6,24 @@ const cors = require("cors")
 const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
-app.use(cors({
-  origin: "*", 
-  credentials: true 
-}));
+const allowedOrigins = [
+  "https://edu-sahayak.vercel.app", // your frontend
+  // you can add localhost for testing:
+  "http://localhost:3000"
+];
 
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // 🔥 allow cookies/auth headers
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
