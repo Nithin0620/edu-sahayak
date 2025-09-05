@@ -4,7 +4,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 const BASE_URL = process.env.NODE_ENV === "development"
-  ? "http://localhost:4000/api"
+  ? "http://localhost:4000/api"  // Change this to match your backend port
   : "https://edu-sahayak.onrender.com/api";
 
 const useAuthStore = create((set, get) => ({
@@ -12,10 +12,16 @@ const useAuthStore = create((set, get) => ({
   user: null,
   loading: false,
   error: null,
-  formData:null,
+  formData:null,  
 
-  setFormDatainStore :(data)=>{
-   set({formData:data});
+  updateFormData: (newData) => {
+    const currentFormData = get().formData || {};
+    set({ 
+      formData: { 
+        ...currentFormData, 
+        ...newData 
+      } 
+    });
   },
 
   loginStart: () => set({ loading: true, error: null }),
@@ -65,17 +71,27 @@ const useAuthStore = create((set, get) => ({
    },
 
 
-   sendOTP: async (email, navigate) => {
+   sendOTP: async (email) => {
       set({ loading: true, error: null });
       try {
+         console.log("Sending OTP to:", email);
          const response = await axios.post(`${BASE_URL}/auth/sendotp`, { email });
+         console.log("OTP Response:", response.data);
+         
          if (response.data?.success) {
-            navigate('/verify-email'); 
-            return success;
+            set({ error: null });
+            return true;
+         } else {
+            set({ error: response.data?.message || 'Failed to send OTP' });
+            return false;
          }
       } catch (error) {
-         set({ error: error.response?.data?.message || 'Failed to send OTP' });
-         return error;
+         console.error("OTP Error:", error);
+         set({ 
+            error: error.response?.data?.message || 'Failed to send OTP',
+            loading: false 
+         });
+         return false;
       } finally {
          set({ loading: false });
       }

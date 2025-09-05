@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, otp, whichClass } = req.body;
+    const { name, email, password, confirmPassword, otp, whichClass, onboard } = req.body;
 
     // 1. Validate required fields
     if (!name || !email || !password || !confirmPassword || !whichClass || !otp) {
@@ -80,6 +80,16 @@ exports.signup = async (req, res) => {
         linkedin: "",
         twitter: "",
       },
+      onboard: onboard || {
+        eq_score: null,
+        eq_level: null,
+        learning_style: {
+          processing: null,
+          perception: null,
+          input: null,
+          understanding: null,
+        },
+      },
     };
 
     const profileResponse = await Profile.create(defaultProfile);
@@ -126,125 +136,133 @@ exports.signup = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-   try {
-      const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-      if (!email || !password) {
-         return res.status(400).json({
-         success: false,
-         message: "All fields are required",
-         });
-      }
-
-      const user = await User.findOne({ email }).populate("profile").exec();
-      if (!user) {
-         return res.status(400).json({
-         success: false,
-         message: "User not found",
-         });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-         return res.status(401).json({
-         success: false,
-         message: "Incorrect password",
-         });
-      }
-
-      const payload = {
-         email: user.email,
-         userId: user._id,
-      };
-
-      const token = jwt.sign(payload, process.env.JWT_SECRET, {
-         expiresIn: "2h",
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
       });
+    }
 
-      user.token = token;
-      await user.save();
-
-      user.password = undefined;
-
-      res.cookie("jwt", token, {
-         expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-         httpOnly: true,
-         secure: false,
-         sameSite: "lax",
+    const user = await User.findOne({ email }).populate("profile").exec();
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
       });
+    }
 
-      return res.status(200).json({
-         success: true,
-         message: "Login successful",
-         token,
-         data: user,
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
       });
-   } catch (error) {
-      console.log(error);
-      return res.status(500).json({
-         success: false,
-         message: "Error occurred in the login controller",
-      });
-   }
+    }
+
+    const payload = {
+      email: user.email,
+      userId: user._id,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
+
+    user.token = token;
+    await user.save();
+
+    user.password = undefined;
+
+    res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      data: user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred in the login controller",
+    });
+  }
 };
 
 exports.sendOtp = async (req, res) => {
-   try {
-      const { email } = req.body;
-   
-
-      const user = await User.findOne({ email });
-      if (user) {
-         return res.status(401).json({
-         success: false,
-         message: "User already registered",
-         });
-      }
-
-      let otp = otpGenerator.generate(6, {
-         upperCaseAlphabets: false,
-         lowerCaseAlphabets: false,
-         specialChars: false,
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
       });
+    }
 
-      let existingOtp = await OTP.findOne({ otp });
-      while (existingOtp) {
-         otp = otpGenerator.generate(6, {
-         upperCaseAlphabets: false,
-         lowerCaseAlphabets: false,
-         specialChars: false,
-         });
-         existingOtp = await OTP.findOne({ otp });
-      }
-
-      const response = await OTP.create({ email, otp });
-
-      return res.status(200).json({
-         success: true,
-         message: "OTP sent successfully",
-         data:response
+    const user = await User.findOne({ email });
+    if (user) {
+      return res.status(401).json({
+        success: false,
+        message: "User already registered",
       });
-   } catch (e) {
-      console.log(e);
-      return res.status(500).json({
-         success: false,
-         message: "Error while sending OTP",
+    }
+
+    let otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    let existingOtp = await OTP.findOne({ otp });
+    while (existingOtp) {
+      otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        lowerCaseAlphabets: false,
+        specialChars: false,
       });
-   }
+      existingOtp = await OTP.findOne({ otp });
+    }
+
+    const response = await OTP.create({ email, otp });
+    console.log("OTP created successfully:", { email, otp });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+      data: response
+    });
+  } catch (error) {
+    console.error("Error in sendOtp:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error while sending OTP",
+      error: error.message
+    });
+  }
 };
 
-exports.logout = (req, res) => {
-   try {
-      res.cookie("jwt", "", { maxAge: 0 });
-      return res
-         .status(200)
-         .json({ success: true, message: "Logged out successfully" });
-   } catch (error) {
-      console.log("Error in logout controller", error.message);
-      return res
-         .status(500)
-         .json({ success: false, message: "Internal Server Error" });
-   }
+exports.logout = async (req, res) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    return res
+      .status(200)
+      .json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    console.log("Error in logout controller", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
 };
 
 exports.checkAuth = async (req, res) => {

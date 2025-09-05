@@ -13,6 +13,7 @@ import chaptersData from "../data/chapters_per_subject.json";
 
 const Flashcards = () => {
   const [selectedSet, setSelectedSet] = useState(null);
+  const [isFetching, setisFetching] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
 
@@ -230,6 +231,83 @@ const Flashcards = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Select Subject & Chapter (Class {userClass})
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Subject Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                className="w-full bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <span
+                  className={
+                    selectedSubject ? "text-gray-900" : "text-gray-500"
+                  }
+                >
+                  {selectedSubject || "Select Subject"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+
+              {isSubjectDropdownOpen && (
+                <div className="absolute z-100 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {getSubjectsForClass().map((subject) => (
+                    <button
+                      key={subject}
+                      onClick={() => {
+                        setSelectedSubject(subject);
+                        setSelectedChapter("");
+                        setIsSubjectDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 capitalize"
+                    >
+                      {subject}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Chapter Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsChapterDropdownOpen(!isChapterDropdownOpen)}
+                disabled={!selectedSubject}
+                className="w-full bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <span
+                  className={
+                    selectedChapter ? "text-gray-900" : "text-gray-500"
+                  }
+                >
+                  {selectedChapter || "Select Chapter"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+
+              {isChapterDropdownOpen && selectedSubject && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {getChaptersForSubject().map((chapter) => (
+                    <button
+                      key={chapter}
+                      onClick={() => {
+                        setSelectedChapter(chapter);
+                        setIsChapterDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 text-sm"
+                    >
+                      {chapter}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
           <Plus className="h-5 w-5" />
           <span>Generate New Set</span>

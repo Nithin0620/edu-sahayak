@@ -266,8 +266,8 @@ const ChatBot = () => {
   } = useYoutubeStore();
 
   const user = useAuthStore();
-  // console.log(user)
   const userClass = user?.user?.profile?.class || '6';
+  // console.log(user)
   // console.log(userClass)
 
   const scrollToBottom = () => {
