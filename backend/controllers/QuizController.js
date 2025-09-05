@@ -2,14 +2,13 @@ const axios = require("axios");
 const Quiz = require("../models/Quiz.js");
 const ChatSession = require("../models/ChatSessions.js");
 
-
 exports.generateQuiz = async (req, res) => {
   try {
     const { sessionId, class_num, subject, chapter } = req.body;
     const userId = req.user.userId;
 
     console.log("📥 Incoming Data:", sessionId, class_num, subject, chapter);
-    
+
     let SessionID;
     let session;
     let cid;
@@ -18,7 +17,9 @@ exports.generateQuiz = async (req, res) => {
     if (sessionId) {
       session = await ChatSession.findOne({ _id: sessionId, user: userId });
       if (!session) {
-        return res.status(404).json({ success: false, message: "Session not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Session not found" });
       }
       cid = session.cid;
       SessionID = sessionId;
@@ -57,16 +58,28 @@ exports.generateQuiz = async (req, res) => {
         chapter,
         cid,
       });
-      sessionId = session._id;
+      sessionID = session._id;
 
       isNewSession = true;
       console.log("🆕 Created new session with CID:", cid);
     }
 
     // 🔗 Call generate-quiz
-    const apiRes = await axios.get(
+    const apiRes = await axios.post(
       "https://InsaneJSK-Code4Bharat-API.hf.space/generate-quiz",
-      { params: { cid } }
+      {
+        cid: cid,
+        profile: {
+          eq_score: 18,
+          eq_level: "Moderate",
+          learning_style: {
+            processing: "Active",
+            perception: "Sensing",
+            input: "Visual",
+            understanding: "Sequential",
+          },
+        },
+      }
     );
 
     console.log("📦 Quiz API Response:", apiRes.data);
@@ -106,7 +119,6 @@ exports.generateQuiz = async (req, res) => {
   }
 };
 
-
 exports.getAllQuizzes = async (req, res) => {
   try {
     const userId = req.user.userId; // from auth middleware
@@ -125,7 +137,6 @@ exports.getAllQuizzes = async (req, res) => {
     res.status(200).json({
       success: true,
       quizzes,
-
     });
   } catch (err) {
     console.error("Error fetching quizzes:", err);
@@ -133,5 +144,15 @@ exports.getAllQuizzes = async (req, res) => {
       success: false,
       message: "Server error while fetching quizzes",
     });
+  }
+
+
+  exports.addQuizToCompleted = async(req,res)=>{
+    try{
+      
+    }
+    catch(e){
+      
+    }
   }
 };
