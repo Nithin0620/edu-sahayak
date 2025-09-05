@@ -1,8 +1,15 @@
-import { useState } from 'react';
-import { Users, Search, Plus, MessageCircle, Star } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Users, Search, Plus, MessageCircle, Star, Bot, User, Send, Menu, X } from 'lucide-react';
 
 const StudyBuddy = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeChatGroup, setActiveChatGroup] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const messagesEndRef = useRef(null);
+  const messegeRef = useRef(null);
 
   const studyGroups = [
     {
@@ -47,6 +54,229 @@ const StudyBuddy = () => {
     group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     group.subject.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleJoinGroup = (group) => {
+    setActiveChatGroup(group);
+    setMessages([
+      {
+        id: 1,
+        type: 'bot',
+        content: `Welcome to ${group.name}! I'm here to help you with ${group.subject}. Feel free to ask any questions about the topics we're studying.`,
+        timestamp: new Date()
+      }
+    ]);
+  };
+
+  const handleBackToGroups = () => {
+    setActiveChatGroup(null);
+    setMessages([]);
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!inputMessage.trim()) return;
+
+    const newMessage = {
+      id: messages.length + 1,
+      type: 'user',
+      content: inputMessage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, newMessage]);
+    setInputMessage('');
+    setIsTyping(true);
+
+    // Simulate bot response
+    setTimeout(() => {
+      const botResponse = {
+        id: messages.length + 2,
+        type: 'bot',
+        content: `Thanks for your question about "${inputMessage}". As members of ${activeChatGroup.name}, we can discuss this topic together. Let me help you understand this better.`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botResponse]);
+      setIsTyping(false);
+    }, 1500);
+  };
+
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const LaTeXMessageRenderer = ({ content }) => {
+    return <div>{content}</div>;
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // If chat is active, show chat interface
+  if (activeChatGroup) {
+    return (
+      <div className="p-4 md:p-8">
+        <div className="mb-4">
+          <button
+            onClick={handleBackToGroups}
+            className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-2"
+          >
+            <span>←</span>
+            <span>Back to Study Groups</span>
+          </button>
+        </div>
+
+        <div className="flex bg-white rounded-lg shadow-md h-[500px] relative overflow-hidden">
+          {/* Sidebar */}
+          <div className={`absolute inset-y-0 left-0 z-50 w-84 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } border-r border-gray-200`}>
+            <div className="flex flex-col h-full">
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Group Members</h2>
+                <button
+                  onClick={toggleSidebar}
+                  className="p-2 rounded-md hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Members List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div className="text-center py-4">
+                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">{activeChatGroup.members} members online</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Overlay for Mobile */}
+          {isSidebarOpen && (
+            <div 
+              className="fixed inset-0 z-40"
+              onClick={toggleSidebar}
+            />
+          )}
+
+          {/* Chat Section */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Chat Header */}
+            <div className="bg-blue-600 text-white p-4 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={toggleSidebar}
+                    className="p-2 rounded-md hover:bg-blue-500 transition-colors"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                  <div className="bg-blue-500 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Users className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{activeChatGroup.name}</h3>
+                    <p className="text-sm text-blue-100">{activeChatGroup.subject} Study Group</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium">{activeChatGroup.members} members</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-3/4 p-3 rounded-lg ${
+                      message.type === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-2">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        message.type === 'user' ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}>
+                        {message.type === 'user' ? (
+                          <User className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm">
+                          <LaTeXMessageRenderer content={message.content} />
+                        </div>
+                        <p style={{ maxHeight: '400px' }} ref={messegeRef} className={`text-xs mt-1 ${
+                          message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
+                        }`}>
+                          {formatTime(message.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-200 text-gray-900 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Chat Input */}
+            <div className="border-t p-4">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage(e)}
+                  placeholder="Ask questions or discuss with group members..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim()}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8">
@@ -104,15 +334,21 @@ const StudyBuddy = () => {
             <div className="flex space-x-2">
               {group.isJoined ? (
                 <>
-                  <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Joined
+                  <button 
+                    onClick={() => handleJoinGroup(group)}
+                    className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+                  >
+                    Enter Group
                   </button>
                   <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 transition-colors">
                     <MessageCircle className="h-4 w-4" />
                   </button>
                 </>
               ) : (
-                <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                <button 
+                  onClick={() => handleJoinGroup(group)}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
                   Join Group
                 </button>
               )}
@@ -138,7 +374,10 @@ const StudyBuddy = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                  <button 
+                    onClick={() => handleJoinGroup(group)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
                     Enter Group
                   </button>
                   <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 transition-colors">
