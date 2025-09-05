@@ -1,19 +1,19 @@
 const axios = require("axios");
 const Quiz = require("../models/Quiz.js");
 const ChatSession = require("../models/ChatSessions.js");
-
+const User = require("../models/User.js")
 exports.generateQuiz = async (req, res) => {
   try {
     const { sessionId, class_num, subject, chapter } = req.body;
     const userId = req.user.userId;
 
-    console.log("📥 Incoming Data:", sessionId, class_num, subject, chapter);
+    // console.log("📥 Incoming Data:", sessionId, class_num, subject, chapter);
 
     let SessionID;
     let session;
     let cid;
     let isNewSession = false;
-
+    const user = User.findById(userId);
     if (sessionId) {
       session = await ChatSession.findOne({ _id: sessionId, user: userId });
       if (!session) {
@@ -23,7 +23,7 @@ exports.generateQuiz = async (req, res) => {
       }
       cid = session.cid;
       SessionID = sessionId;
-      console.log("✅ Using existing session CID:", cid);
+      // console.log("✅ Using existing session CID:", cid);
     } else {
       if (!class_num || !subject || !chapter) {
         return res.status(400).json({
@@ -38,7 +38,7 @@ exports.generateQuiz = async (req, res) => {
         { params: { class_num, subject, chapter } }
       );
 
-      console.log("📦 Upsert Response:", upsertRes.data);
+      // console.log("📦 Upsert Response:", upsertRes.data);
 
       cid = upsertRes.data?.cid || upsertRes.data?.data?.cid; // 🔑 safer extraction
       if (!cid) {
@@ -58,7 +58,7 @@ exports.generateQuiz = async (req, res) => {
         chapter,
         cid,
       });
-      sessionID = session._id;
+      SessionID = session._id;
 
       isNewSession = true;
       console.log("🆕 Created new session with CID:", cid);
@@ -69,20 +69,10 @@ exports.generateQuiz = async (req, res) => {
       "https://InsaneJSK-Code4Bharat-API.hf.space/generate-quiz",
       {
         cid: cid,
-        profile: {
-          eq_score: 18,
-          eq_level: "Moderate",
-          learning_style: {
-            processing: "Active",
-            perception: "Sensing",
-            input: "Visual",
-            understanding: "Sequential",
-          },
-        },
+        profile: user.onboard,
       }
     );
 
-    console.log("📦 Quiz API Response:", apiRes.data);
 
     const quizData = apiRes.data?.quiz || [];
     if (!quizData.length) {
@@ -147,12 +137,38 @@ exports.getAllQuizzes = async (req, res) => {
   }
 
 
-  exports.addQuizToCompleted = async(req,res)=>{
-    try{
-      
-    }
-    catch(e){
-      
-    }
-  }
 };
+
+
+
+
+  exports.submitQuiz = async (req, res) => {
+    try {
+      const { quizId, answers } = req.body;
+
+      if (!quizId || !answers) {
+        return res
+          .status(400)
+          .json({ message: "quizId and answers are required" });
+      }
+
+      const quiz = await Quiz.findById(quizId);
+      if (!quiz) {
+        return res.status(404).json({ message: "Quiz not found" });
+      }
+
+      // Update quiz
+      quiz.completed = true;
+      quiz.ans = JSON.stringify(answers); // or store as array if you want
+
+      await quiz.save();
+
+      return res.status(200).json({
+        message: "Quiz submitted successfully",
+        quiz,
+      });
+    } catch (err) {
+      console.error("Submit quiz error:", err);
+      res.status(500).json({ message: "Failed to submit quiz" });
+    }
+  };
