@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const flashcardSchema = new mongoose.Schema({
   cid: {
     type: String,
-    required: true, // e.g. "class10_science_chapter11"
+    required: true, 
   },
   question: {
     type: String,

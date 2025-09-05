@@ -49,6 +49,7 @@ const chatRoutes = require("./routes/chat.routes")
 const groupsRoutes = require("./routes/groups")
 const groupaMessage = require("./routes/GRPMessage")
 const quiz = require("./routes/Quiz.routes")
+const cards = require("./routes/flashcardRoutes")
 
 app.use("/api/auth",authRoutes);
 app.use("/api/requirement",aiAPiRoutes);
@@ -56,6 +57,7 @@ app.use("/api/chat",chatRoutes);
 app.use("/api/group",groupsRoutes);
 app.use("/api/grpmsg",groupaMessage);
 app.use("/api/quiz",quiz);
+app.use("/api/cards",cards);
 
 
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
