@@ -5,7 +5,7 @@ import { useQuizStore } from "../ZustandStore/QuizStore";
 const QuizAttempt = () => {
   const { quizId } = useParams();
   const navigate = useNavigate();
-  const { quizzes } = useQuizStore();
+  const { quizzes, submitQuiz, loading } = useQuizStore();
 
   const [currentQuiz, setCurrentQuiz] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -13,6 +13,8 @@ const QuizAttempt = () => {
   const [score, setScore] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null);
 
   useEffect(() => {
     const quiz = quizzes.find(q => q._id === quizId);
@@ -31,33 +33,37 @@ const QuizAttempt = () => {
     setSelectedAnswer(String.fromCharCode(97 + optionIndex)); // Convert to a, b, c, d
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Validate answer
     const isCorrect = currentQuestion.answer.includes(selectedAnswer);
     if (isCorrect) setScore(score + 1);
 
     // Store answer
-    setAnswers([...answers, {
-      questionId: currentQuestion._id,
-      selectedAnswer,
-      isCorrect
-    }]);
+    const updatedAnswers = [
+      ...answers,
+      {
+        questionId: currentQuestion._id,
+        selectedAnswer,
+        isCorrect
+      }
+    ];
+    setAnswers(updatedAnswers);
 
     if (currentQuestionIndex < currentQuiz.quiz.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer("");
     } else {
       setQuizCompleted(true);
-      // Here you would typically send the results to your backend
-      console.log("Quiz completed", {
+      setSubmitting(true);
+      // Only send the number of correct answers
+      const correctCount = updatedAnswers.filter(a => a.isCorrect).length;
+      const payload = {
         quizId,
-        score: ((score + (isCorrect ? 1 : 0)) / currentQuiz.quiz.length) * 100,
-        answers: [...answers, {
-          questionId: currentQuestion._id,
-          selectedAnswer,
-          isCorrect
-        }]
-      });
+        answers: correctCount
+      };
+      const result = await submitQuiz(payload);
+      setSubmitResult(result);
+      setSubmitting(false);
     }
   };
 
@@ -68,6 +74,14 @@ const QuizAttempt = () => {
         <p className="text-xl mb-4">
           Your score: {Math.round((score / currentQuiz.quiz.length) * 100)}%
         </p>
+        {submitting && (
+          <p className="text-blue-600 mb-4">Submitting your answers...</p>
+        )}
+        {submitResult && (
+          <div className="mb-4 text-green-600">
+            Quiz submitted successfully!
+          </div>
+        )}
         <button
           onClick={() => navigate("/quizzes")}
           className="bg-blue-600 text-white px-6 py-2 rounded"
@@ -115,10 +129,12 @@ const QuizAttempt = () => {
 
         <button
           onClick={handleNext}
-          disabled={!selectedAnswer}
+          disabled={!selectedAnswer || submitting}
           className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded disabled:bg-gray-400"
         >
-          {currentQuestionIndex === currentQuiz.quiz.length - 1 ? "Finish" : "Next"}
+          {currentQuestionIndex === currentQuiz.quiz.length - 1
+            ? submitting ? "Submitting..." : "Finish"
+            : "Next"}
         </button>
       </div>
     </div>
@@ -126,3 +142,4 @@ const QuizAttempt = () => {
 };
 
 export default QuizAttempt;
+// export default QuizAttempt;
