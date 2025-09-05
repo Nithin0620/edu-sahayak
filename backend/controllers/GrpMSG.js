@@ -26,20 +26,21 @@ exports.getMessagesByGroup = async (req, res) => {
  */
 exports.sendMessage = async (req, res) => {
   try {
-    const { groupId, content, type } = req.body;
-    const senderId = req.user._id;
+    const { groupName, content, type,classno } = req.body;
+    const senderId = req.user.userId;
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
+    // const receiverSocketId = getReceiverSocketId(receiverId);
 
-    if(receiverSocketId){
-        io.to(receiverSocketId).emit("newMessage",newMessage);
-    }
+    // if(receiverSocketId){
+    //     io.to(receiverSocketId).emit("newMessage",newMessage);
+    // }
 
-    const group = await Group.findById(groupId);
+    const group = await Group.find({group:groupName});
     if (!group) return res.status(404).json({ message: "Group not found" });
 
     const message = await GRPMessage.create({
-      group: groupId,
+      class: classno,
+      group: groupName,
       sender: senderId,
       content,
       type: type || "text",
