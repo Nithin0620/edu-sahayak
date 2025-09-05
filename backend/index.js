@@ -7,7 +7,7 @@ const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
 app.use(cors({
-  origin: "http://localhost:5173", 
+  origin: `${process.env.ENVIRONMENT  ? "http://localhost:5173" : "https://edu-sahayak.vercel.app"}`, 
   credentials: true 
 }));
 
