@@ -13,6 +13,15 @@ const quizSchema = new mongoose.Schema(
         answer: [String],
       },
     ],
+
+    completed:{
+      type:Boolean,
+      default:false,
+    },
+
+    ans:{
+      type:String,
+    }
   },
   { timestamps: true }
 );
