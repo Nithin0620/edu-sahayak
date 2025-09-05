@@ -1,18 +1,35 @@
 import { useState } from "react";
-import { CreditCard, Plus, Edit, Trash2, RotateCw } from "lucide-react";
-
+import {
+  CreditCard,
+  Plus,
+  Edit,
+  Trash2,
+  RotateCw,
+  Menu,
+  ChevronDown,
+  Bot,
+  User,
+  Send,
+} from "lucide-react";
+import useAuthStore from "../ZustandStore/Auth";
+import chaptersData from '../data/chapters_per_subject.json';
+import { useFlashcardStore } from "../ZustandStore/flashcardStore";
 const Flashcards = () => {
   const [selectedSet, setSelectedSet] = useState(null);
+  const [isFetching, setisFetching] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
 
-    // const [selectedSubject, setSelectedSubject] = useState('');
-    // const [selectedChapter, setSelectedChapter] = useState('');
-    // const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
-    // const [isChapterDropdownOpen, setIsChapterDropdownOpen] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedChapter, setSelectedChapter] = useState("");
+  const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+  const [isChapterDropdownOpen, setIsChapterDropdownOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const flashcardsData = [
-    {
+  const user = useAuthStore();
+  const userClass = user?.user?.profile?.class || "6";
+
+  const flashcardsData = [{
       Question: "What are the key points about electric power and its units?",
       Answer: [
         "Electric power is given by P = VI, P = I^2R, and P = V^2/R",
@@ -43,62 +60,64 @@ const Flashcards = () => {
       Answer: ["nickel", "chromium", "manganese", "iron"],
     },
   ];
-  const flashcardSets = [
-    {
-      id: 1,
-      title: "Math Formulas",
-      subject: "Mathematics",
-      cards: [
-        {
-          id: 1,
-          question: "What is the quadratic formula?",
-          answer: "x = (-b ± √(b²-4ac)) / 2a",
-        },
-        {
-          id: 2,
-          question: "What is the Pythagorean theorem?",
-          answer: "a² + b² = c²",
-        },
-        {
-          id: 3,
-          question: "What is the slope formula?",
-          answer: "m = (y₂-y₁)/(x₂-x₁)",
-        },
-      ],
-      created: "2 days ago",
-    },
-    {
-      id: 2,
-      title: "Chemistry Elements",
-      subject: "Chemistry",
-      cards: [
-        { id: 1, question: "What is the symbol for Gold?", answer: "Au" },
-        {
-          id: 2,
-          question: "What is the atomic number of Carbon?",
-          answer: "6",
-        },
-        { id: 3, question: "What is the formula for water?", answer: "H₂O" },
-      ],
-      created: "1 week ago",
-    },
-    {
-      id: 3,
-      title: "Historical Dates",
-      subject: "History",
-      cards: [
-        { id: 1, question: "When did World War II end?", answer: "1945" },
-        {
-          id: 2,
-          question: "When was the Declaration of Independence signed?",
-          answer: "1776",
-        },
-        { id: 3, question: "When did the Berlin Wall fall?", answer: "1989" },
-      ],
-      created: "3 days ago",
-    },
-  ];
-
+  // const flashcardSets = [
+  //   {
+  //     id: 1,
+  //     title: "Math Formulas",
+  //     subject: "Mathematics",
+  //     cards: [
+  //       {
+  //         id: 1,
+  //         question: "What is the quadratic formula?",
+  //         answer: "x = (-b ± √(b²-4ac)) / 2a",
+  //       },
+  //       {
+  //         id: 2,
+  //         question: "What is the Pythagorean theorem?",
+  //         answer: "a² + b² = c²",
+  //       },
+  //       {
+  //         id: 3,
+  //         question: "What is the slope formula?",
+  //         answer: "m = (y₂-y₁)/(x₂-x₁)",
+  //       },
+  //     ],
+  //     created: "2 days ago",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Chemistry Elements",
+  //     subject: "Chemistry",
+  //     cards: [
+  //       { id: 1, question: "What is the symbol for Gold?", answer: "Au" },
+  //       {
+  //         id: 2,
+  //         question: "What is the atomic number of Carbon?",
+  //         answer: "6",
+  //       },
+  //       { id: 3, question: "What is the formula for water?", answer: "H₂O" },
+  //     ],
+  //     created: "1 week ago",
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Historical Dates",
+  //     subject: "History",
+  //     cards: [
+  //       { id: 1, question: "When did World War II end?", answer: "1945" },
+  //       {
+  //         id: 2,
+  //         question: "When was the Declaration of Independence signed?",
+  //         answer: "1776",
+  //       },
+  //       { id: 3, question: "When did the Berlin Wall fall?", answer: "1989" },
+  //     ],
+  //     created: "3 days ago",
+  //   },
+  // ];
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
   const handleCardFlip = () => {
     setShowAnswer(!showAnswer);
   };
@@ -120,7 +139,18 @@ const Flashcards = () => {
   const handleSetSelect = (set) => {
     setSelectedSet(set);
     setCurrentCard(0);
-    setShowAnswer(false); 
+    setShowAnswer(false);
+  };
+
+  const getSubjectsForClass = () => {
+    const classData = chaptersData[userClass];
+    return classData ? Object.keys(classData) : [];
+  };
+  
+  const getChaptersForSubject = () => {
+    if (!selectedSubject) return [];
+    const classData = chaptersData[userClass];
+    return classData?.[selectedSubject] || [];
   };
 
   if (selectedSet) {
@@ -214,6 +244,83 @@ const Flashcards = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Select Subject & Chapter (Class {userClass})
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Subject Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                className="w-full bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <span
+                  className={
+                    selectedSubject ? "text-gray-900" : "text-gray-500"
+                  }
+                >
+                  {selectedSubject || "Select Subject"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+
+              {isSubjectDropdownOpen && (
+                <div className="absolute z-100 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {getSubjectsForClass().map((subject) => (
+                    <button
+                      key={subject}
+                      onClick={() => {
+                        setSelectedSubject(subject);
+                        setSelectedChapter("");
+                        setIsSubjectDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 capitalize"
+                    >
+                      {subject}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Chapter Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsChapterDropdownOpen(!isChapterDropdownOpen)}
+                disabled={!selectedSubject}
+                className="w-full bg-white border border-gray-300 rounded-md px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <span
+                  className={
+                    selectedChapter ? "text-gray-900" : "text-gray-500"
+                  }
+                >
+                  {selectedChapter || "Select Chapter"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+
+              {isChapterDropdownOpen && selectedSubject && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {getChaptersForSubject().map((chapter) => (
+                    <button
+                      key={chapter}
+                      onClick={() => {
+                        setSelectedChapter(chapter);
+                        setIsChapterDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 focus:outline-none focus:bg-blue-50 text-sm"
+                    >
+                      {chapter}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
           <Plus className="h-5 w-5" />
           <span>Generate New Set</span>
@@ -221,8 +328,7 @@ const Flashcards = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* {flashcardsData.map((set,index) => ( */}
-        {flashcardSets .map((set,index) => (
+        {flashcardSets.map((set, index) => (
           <div
             key={index}
             className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"

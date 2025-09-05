@@ -13,6 +13,7 @@ import Flashcards from './pages/Flashcards';
 import ChatBot from './pages/ChatBot';
 import DashboardLayout from './layouts/DashboardLayout';
 import SignupPage from './pages/SignupPage';
+import OnboardingPage from './pages/OnboardingPage';
 import OtpVerificationPage from './pages/OtpVerificationPage';
 import useAuthStore from './ZustandStore/Auth';
 import PublicRoute from './components/PublicRoute';
@@ -53,6 +54,12 @@ function App() {
             <Route path="/signup" element={
               <PublicRoute>
                 <SignupPage />
+              </PublicRoute>
+            } />
+
+            <Route path="/onboarding" element={
+              <PublicRoute>
+                <OnboardingPage />
               </PublicRoute>
             } />
 

@@ -20,7 +20,7 @@ const SignupPage = () => {
    });
 
    const navigate = useNavigate();
-   const { sendOTP ,setFormDatainStore,loading} = useAuthStore();
+   const { setFormDatainStore,loading} = useAuthStore();
 
    const handleChange = (e) =>
       setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -31,15 +31,13 @@ const SignupPage = () => {
          formData.name &&
          formData.email &&
          formData.password &&
-         formData.password === formData.confirmPassword
+         formData.password === formData.confirmPassword &&
+         formData.whichClass
       ) {
          setFormDatainStore(formData);
-         const success =sendOTP(formData.email, navigate);
-         if(success){
-            navigate("/verify-email")
-         }
+         navigate("/onboarding");
       } else {
-         alert("Passwords don't match or fields are empty");
+         alert("Please fill all fields correctly and ensure passwords match");
       }
    };
 
@@ -152,7 +150,7 @@ const SignupPage = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
                >
                   {
-                     loading ?  <Loader  className="animate-spin"/> : "Send OTP"
+                     loading ?  <Loader  className="animate-spin"/> : "Continue to Assessment"
                   }
                </button>
                </div>
@@ -167,3 +165,6 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
+// };
+
+// export default SignupPage;
