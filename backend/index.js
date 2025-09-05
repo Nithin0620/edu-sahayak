@@ -33,7 +33,7 @@ app.use(cookieParser());
 const authRoutes = require("./routes/Auth.routes")
 const aiAPiRoutes = require("./routes/AiApi.routes")
 const chatRoutes = require("./routes/chat.routes")
-const groupsRoutes = require("./routes/")
+const groupsRoutes = require("./routes/groups")
 const groupaMessage = require("./routes/GRPMessage")
 
 app.use("/api/auth",authRoutes);
