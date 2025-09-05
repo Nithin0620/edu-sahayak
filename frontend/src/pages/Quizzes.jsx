@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Brain, Clock, Award, Play, Check } from 'lucide-react';
+import Quiz from '../components/Quiz';
 
 const Quizzes = () => {
   const [activeTab, setActiveTab] = useState('available');
+  const [activeQuiz, setActiveQuiz] = useState(null);
+  const [quizQuestions, setQuizQuestions] = useState(null);
 
   const quizzes = [
     {
@@ -58,6 +61,84 @@ const Quizzes = () => {
 
   const availableQuizzes = quizzes.filter(quiz => !quiz.completed);
   const completedQuizzes = quizzes.filter(quiz => quiz.completed);
+
+  const sampleQuizQuestions = {
+    cid: "class10_science_chapter 11: electricity",
+    quiz: [
+      {
+        question: "What determines the rate at which energy is delivered by a current?",
+        options: ["Voltage", "Current", "Resistance", "Power"],
+        answer: ["d"]
+      },
+      {
+        question: "What is the SI unit of electric current?",
+        options: ["Ampere", "Volt", "Watt", "Ohm"],
+        answer: ["a"]
+      },
+      {
+        question: "What is the power of the electric bulb connected to a 220 V generator with a current of 0.50 A?",
+        options: ["100 W", "110 W", "120 W", "130 W"],
+        answer: ["b"]
+      },
+      {
+        question: "What is the chemical action within a battery or cell used for?",
+        options: ["To generate potential difference", "To increase resistance", "To decrease voltage", "To stop current flow"],
+        answer: ["a"]
+      },
+      {
+        question: "What is the term for the difference of electric pressure along a conductor?",
+        options: ["Potential difference", "Voltage", "Current", "Resistance"],
+        answer: ["a"]
+      },
+      {
+        question: "What is the cost of energy to operate an electric refrigerator rated 400 W for 30 days at Rs 3.00 per kW h?",
+        options: ["Rs 288", "Rs 300", "Rs 360", "Rs 400"],
+        answer: ["c"]
+      },
+      {
+        question: "What is the direction of current taken in a circuit?",
+        options: ["Same as flow of electrons", "Opposite to flow of electrons", "Perpendicular to flow of electrons", "Parallel to flow of electrons"],
+        answer: ["b"]
+      },
+      {
+        question: "What is the unit of power in the SI system?",
+        options: ["Watt", "Volt", "Ampere", "Ohm"],
+        answer: ["a"]
+      },
+      {
+        question: "What is the value of 1 kW h in joules?",
+        options: ["3.6 × 10^5 J", "3.6 × 10^6 J", "3.6 × 10^3 J", "3.6 × 10^4 J"],
+        answer: ["b"]
+      },
+      {
+        question: "What is the term for a component that offers low resistance to the flow of electrons?",
+        options: ["Conductor", "Insulator", "Resistor", "Regulator"],
+        answer: ["a"]
+      }
+    ]
+  };
+
+  const handleStartQuiz = (quizId) => {
+    setActiveQuiz(quizId);
+    setQuizQuestions(sampleQuizQuestions.quiz); // Set the quiz questions
+  };
+
+  const handleQuizComplete = (score) => {
+    // Update the quiz score and completed status
+    const updatedQuizzes = quizzes.map(quiz => 
+      quiz.id === activeQuiz 
+        ? { ...quiz, score, completed: true }
+        : quiz
+    );
+    // Here you would typically send the score to your backend
+    setActiveQuiz(null);
+    setActiveTab('completed');
+    setQuizQuestions(null);
+  };
+
+  if (activeQuiz && quizQuestions) {
+    return <Quiz questions={quizQuestions} onComplete={handleQuizComplete} />;
+  }
 
   return (
     <div className="p-4 md:p-8">
@@ -164,11 +245,14 @@ const Quizzes = () => {
               )}
             </div>
             
-            <button className={`w-full px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center space-x-2 ${
-              quiz.completed
-                ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            } transition-colors`}>
+            <button 
+              onClick={() => quiz.completed ? null : handleStartQuiz(quiz.id)}
+              className={`w-full px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center space-x-2 ${
+                quiz.completed
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } transition-colors`}
+            >
               {quiz.completed ? (
                 <>
                   <Check className="h-4 w-4" />
