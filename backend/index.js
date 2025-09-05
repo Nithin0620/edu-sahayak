@@ -7,7 +7,7 @@ const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
 app.use(cors({
-  origin: `${process.env.ENVIRONMENT  ? "http://localhost:5173" : "https://edu-sahayak.vercel.app"}`, 
+  origin: "*", 
   credentials: true 
 }));
 
@@ -33,7 +33,7 @@ app.use(cookieParser());
 const authRoutes = require("./routes/Auth.routes")
 const aiAPiRoutes = require("./routes/AiApi.routes")
 const chatRoutes = require("./routes/chat.routes")
-const groupsRoutes = require("./routes/groups")
+const groupsRoutes = require("./routes/")
 const groupaMessage = require("./routes/GRPMessage")
 
 app.use("/api/auth",authRoutes);
