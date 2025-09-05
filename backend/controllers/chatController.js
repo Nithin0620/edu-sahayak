@@ -1,6 +1,7 @@
 const ChatSession = require('../models/ChatSessions');
 const ChatMessage = require('../models/Message');
 const axios = require('axios');
+const User = require('../models/User');
 
 
 exports.chatWithAI = async (req, res) => {
@@ -20,6 +21,8 @@ exports.chatWithAI = async (req, res) => {
     let cid;
     let messages = [];
     let isNewSession = false;
+
+    const user = User.findById(userId);
 
     // ✅ Case 1: Existing Session
     if (sessionId) {
@@ -43,7 +46,7 @@ exports.chatWithAI = async (req, res) => {
       const upsertRes = await axios.get(
         'https://InsaneJSK-Code4Bharat-API.hf.space/upsert-chapter',
         {
-          params: { class_num, subject, chapter },
+          params: { class_num, subject, chapter }
         }
       );
 
@@ -76,9 +79,12 @@ exports.chatWithAI = async (req, res) => {
       cid: cid, // ✅ Always use cid from DB (whether existing or just saved)
       messages,
       user_input,
-      class_num,
-      subject,
-      chapter,
+      // class_num,
+      // subject,
+      // chapter,
+      
+        profile: user.onboard,
+      
     };
    //  console.log("📦 Payload being sent to chat-ncert:", payload);
 

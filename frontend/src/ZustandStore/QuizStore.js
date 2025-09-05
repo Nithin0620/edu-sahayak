@@ -66,4 +66,6 @@ export const useQuizStore = create((set, get) => ({
       });
     }
   },
+
+  
 }));

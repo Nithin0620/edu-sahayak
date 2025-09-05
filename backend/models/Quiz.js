@@ -20,7 +20,7 @@ const quizSchema = new mongoose.Schema(
     },
 
     ans:{
-      type:String,
+      type:Number,
     }
   },
   { timestamps: true }
