@@ -21,15 +21,17 @@ const otpSchema = new mongoose.Schema({
 
 const sendVerificationEmail = async(email,otp) =>{
    try{
-      const mailresponse = await sendEmail(
+      const mailResponse = await sendEmail(
          email,
-         "verification Email",
+         "Verification Email from EduSahayak",
          verificationMailTamplet(otp)
-      )
+      );
+      console.log("Mail sent successfully:", mailResponse);
+      return mailResponse;
    }
-   catch(e){
-      console.log("error in calling the mailSender function inside the otp.js modal")
-      console.log(e);
+   catch(error){
+      console.error("Error sending verification email:", error);
+      throw error; // Throw error to be handled by controller
    }
 }
 

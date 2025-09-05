@@ -8,7 +8,6 @@ import { MdOutlineClass } from "react-icons/md";
 
 
 const SignupPage = () => {
-
    const classArray= [1,2,3,4,5,6,7,8,9,10,11,12]
 
    const [formData, setFormData] = useState({
@@ -20,7 +19,7 @@ const SignupPage = () => {
    });
 
    const navigate = useNavigate();
-   const { setFormDatainStore,loading} = useAuthStore();
+   const { updateFormData, loading} = useAuthStore();
 
    const handleChange = (e) =>
       setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,7 +33,8 @@ const SignupPage = () => {
          formData.password === formData.confirmPassword &&
          formData.whichClass
       ) {
-         setFormDatainStore(formData);
+         // Store form data in Zustand store before navigating
+         updateFormData(formData);
          navigate("/onboarding");
       } else {
          alert("Please fill all fields correctly and ensure passwords match");

@@ -9,7 +9,7 @@ const {app,server} = require("./config/socketio");
 const allowedOrigins = [
   "https://edu-sahayak.vercel.app", // your frontend
   // you can add localhost for testing:
-  "http://localhost:3000"
+  "http://localhost:5173"
 ];
 
 app.use(

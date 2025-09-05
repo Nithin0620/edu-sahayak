@@ -5,14 +5,17 @@ import useAuthStore from '../ZustandStore/Auth';
 
 const OnboardingPage = () => {
    const navigate = useNavigate();
-   const { sendOTP, formData, loading } = useAuthStore();
+   const { sendOTP, formData, loading, updateFormData } = useAuthStore();
+   
+   // Debug: Log formData on component mount
+   console.log("OnboardingPage - Current formData:", formData);
    
    const [eqAnswers, setEqAnswers] = useState({
       q1: 0, q2: 0, q3: 0, q4: 0, q5: 0
    });
    
    const [ilsAnswers, setIlsAnswers] = useState({
-      q1: '', q2: '', q3: '', q4: '', q5: ''
+      q1: '', q2: '', q3: '', q4: ''  // Only 4 questions, not 5
    });
 
    const eqQuestions = [
@@ -61,14 +64,34 @@ const OnboardingPage = () => {
    };
 
    const calculateScores = () => {
-      const eqScore = Object.values(eqAnswers).reduce((sum, val) => sum + val, 0) + 1;
+      // EQ Score = Sum of all 5 items (min: 5, max: 25)
+      const eqScore = Object.values(eqAnswers).reduce((sum, val) => sum + val, 0);
       
-      let eqClassification;
-      if (eqScore <= 12) eqClassification = "Low EQ - Needs strong emotional regulation support";
-      else if (eqScore <= 19) eqClassification = "Moderate EQ - Some awareness, can improve self-regulation";
-      else eqClassification = "High EQ - High emotional awareness, can self-adjust effectively";
+      // EQ Classification based on the new ranges
+      let eqLevel;
+      if (eqScore >= 5 && eqScore <= 12) {
+         eqLevel = "Low";
+      } else if (eqScore >= 13 && eqScore <= 19) {
+         eqLevel = "Moderate";
+      } else if (eqScore >= 20 && eqScore <= 25) {
+         eqLevel = "High";
+      } else {
+         eqLevel = "Invalid"; // fallback for incomplete answers
+      }
 
-      return { eqScore, eqClassification, ilsAnswers };
+      // Learning Style Mapping
+      const learningStyle = {
+         processing: ilsAnswers.q1 === 'a' ? 'Active' : 'Reflective',
+         perception: ilsAnswers.q2 === 'a' ? 'Sensing' : 'Intuitive', 
+         input: ilsAnswers.q3 === 'a' ? 'Visual' : 'Verbal',
+         understanding: ilsAnswers.q4 === 'a' ? 'Sequential' : 'Global'
+      };
+
+      return { 
+         eq_score: eqScore, 
+         eq_level: eqLevel, 
+         learning_style: learningStyle 
+      };
    };
 
    const handleSubmit = async (e) => {
@@ -82,14 +105,14 @@ const OnboardingPage = () => {
          return;
       }
 
-      const scores = calculateScores();
+      const onboardingResults = calculateScores();
+      updateFormData({ onboard: onboardingResults });
       
-      // Store the onboarding results
-      console.log("Onboarding Results:", scores);
+      // Get updated formData after the update
+      const { formData: currentFormData } = useAuthStore.getState();
       
-      // Send OTP after completing onboarding
-      if (formData?.email) {
-         const success = await sendOTP(formData.email, navigate);
+      if (currentFormData?.email) {
+         const success = await sendOTP(currentFormData.email);
          if (success) {
             navigate("/verify-email");
          }
@@ -137,6 +160,7 @@ const OnboardingPage = () => {
                                        type="radio"
                                        name={`eq_q${index + 1}`}
                                        value={value}
+                                       checked={eqAnswers[`q${index + 1}`] === value}
                                        onChange={(e) => handleEqChange(index, e.target.value)}
                                        className="mr-2"
                                     />
@@ -167,6 +191,7 @@ const OnboardingPage = () => {
                                     type="radio"
                                     name={`ils_q${index + 1}`}
                                     value="a"
+                                    checked={ilsAnswers[`q${index + 1}`] === 'a'}
                                     onChange={(e) => handleIlsChange(index, e.target.value)}
                                     className="mr-2"
                                  />
@@ -177,6 +202,7 @@ const OnboardingPage = () => {
                                     type="radio"
                                     name={`ils_q${index + 1}`}
                                     value="b"
+                                    checked={ilsAnswers[`q${index + 1}`] === 'b'}
                                     onChange={(e) => handleIlsChange(index, e.target.value)}
                                     className="mr-2"
                                  />
@@ -218,3 +244,20 @@ const OnboardingPage = () => {
 };
 
 export default OnboardingPage;
+//                </form>
+//             </div>
+//          </div>
+//       </div>
+//    );
+// };
+
+// export default OnboardingPage;
+// export default OnboardingPage;
+//                </form>
+//             </div>
+//          </div>
+//       </div>
+//    );
+// };
+
+// export default OnboardingPage;
