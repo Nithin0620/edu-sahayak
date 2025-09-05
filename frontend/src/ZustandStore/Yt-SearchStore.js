@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api/requirement"
-  : "/api/requirement";
+  : "https://edu-sahayak.onrender.com/api/requirement";
 
 
 export const useYoutubeStore = create((set) => ({

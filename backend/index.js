@@ -1,16 +1,29 @@
 const express = require("express")
-const app = express();
+// const app = express();
 
 require("dotenv").config();
 const cors = require("cors")
 const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
+const {app,server} = require("./config/socketio");
+const allowedOrigins = [
+  "https://edu-sahayak.vercel.app", // your frontend
+  // you can add localhost for testing:
+  "http://localhost:3000"
+];
 
-app.use(cors({
-  origin: "http://localhost:5173", 
-  credentials: true 
-}));
-
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // 🔥 allow cookies/auth headers
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,10 +46,14 @@ app.use(cookieParser());
 const authRoutes = require("./routes/Auth.routes")
 const aiAPiRoutes = require("./routes/AiApi.routes")
 const chatRoutes = require("./routes/chat.routes")
+const groupsRoutes = require("./routes/groups")
+const groupaMessage = require("./routes/GRPMessage")
 
 app.use("/api/auth",authRoutes);
 app.use("/api/requirement",aiAPiRoutes);
 app.use("/api/chat",chatRoutes);
+app.use("/api/group",groupsRoutes);
+app.use("/api/grpmsg",groupaMessage);
 
 
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -49,7 +66,7 @@ dbconnect();
 
 
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("server is running on PORT:" + PORT);
 });
 
