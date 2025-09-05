@@ -17,6 +17,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import OtpVerificationPage from './pages/OtpVerificationPage';
 import useAuthStore from './ZustandStore/Auth';
 import PublicRoute from './components/PublicRoute';
+import QuizAttempt from './pages/QuizAttempt';
 
 import { Navigate } from 'react-router-dom';
 
@@ -98,6 +99,7 @@ function App() {
                 <ChatBot />
               </DashboardLayout>
             } />
+            <Route path="/quiz-attempt/:quizId" element={<QuizAttempt />} />
           </Routes>
         </div>
       </Router>
