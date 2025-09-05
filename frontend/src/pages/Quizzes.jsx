@@ -12,6 +12,7 @@ const Quizzes = () => {
   const [class_num, setCLass_Num] = useState(`${user?.profile?.class || "Not set"}`); // fixed class for now (can make dynamic)
   const [subject, setSelectedSubject] = useState("");
   const [chapter, setSelectedChapter] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   const getSubjectsForClass = () => {
     const classData = chaptersData[class_num];
@@ -42,9 +43,19 @@ const Quizzes = () => {
 
   const sessionIs = "";
 
-  const handleGenerate = () => {
-    console.log("class_num,subject,chapter", class_num, subject, chapter);
-    generateQuiz({ sessionIs, class_num, subject, chapter });
+  const handleGenerate = async () => {
+    if (!subject || !chapter) return;
+    setGenerating(true);
+    try {
+      await generateQuiz({ sessionIs, class_num, subject, chapter });
+      // Optionally, fetch quizzes again after generation
+      if (sessionId) {
+        await fetchQuizzes(sessionId);
+      }
+    } catch (e) {
+      // handle error if needed
+    }
+    setGenerating(false);
   };
 
   // ✅ Fetch quizzes when sessionId is set
@@ -137,10 +148,14 @@ const Quizzes = () => {
         )}
       </div>
 
-      <div onClick={() => handleGenerate()} className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
-        <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+      <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-8">
+        <button
+          onClick={handleGenerate}
+          disabled={generating || loading}
+          className={`bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 ${generating || loading ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
           <Plus className="h-5 w-5" />
-          <span>Generate New Set</span>
+          <span>{generating ? "Generating..." : "Generate New Set"}</span>
         </button>
       </div>
 
