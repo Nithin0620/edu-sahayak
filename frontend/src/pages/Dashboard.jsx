@@ -109,16 +109,35 @@ const Dashboard = () => {
     );
   };
 
-  const { fetchSessions, sessions } = useChatStore();
+  const {fetchSessions,sessions} = useChatStore();
+  const { fetchQuizzes, completedQuizzes } = useQuizStore();
 
   const handleRecentChatClick = async (session) => {
     // setIsSessionSelected(session)
     // dasboardChatClickHandler(session);
-    navigate("/chatbot");
+    navigate('/chatbot');
   };
 
+  // Filter function to get only chat sessions (exclude quiz and flashcard sessions)
+  const getChatSessions = () => {
+    return sessions.filter(session => {
+      const title = session.title?.toLowerCase() || '';
+      const type = session.type?.toLowerCase();
+      
+      // Exclude based on type field or title patterns
+      if (type === 'quiz' || type === 'flashcard') {
+        return false;
+      }
+      
+      // Also exclude based on title patterns for backward compatibility
+      return !title.startsWith('quiz') && !title.startsWith('flashcard');
+    });
+  };
+
+
   useEffect(() => {
-    fetchSessions(); // Load recent chats
+    fetchSessions();
+    fetchQuizzes(); // Fetch quiz data for stats
     gsap.fromTo(
       cardsRef.current.children,
       { opacity: 0, scale: 0.9 },
@@ -145,13 +164,8 @@ const Dashboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 mb-5 md:grid-cols-2 gap-8">
-        {/* Recent Chats */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-blue-600" />
-            Recent Chats
-          </h2>
+      {/* Onboarding Retake Banner */}
+      <OnboardingRetakeBanner />
 
       {/* Stats Cards */}
       <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
@@ -161,18 +175,33 @@ const Dashboard = () => {
               <p className="text-sm font-medium text-gray-600">Study Hours</p>
               <p className="text-2xl font-bold text-gray-900">4.5</p>
             </div>
-          ) : (
-            <p className="text-gray-500">No recent chats yet.</p>
-          )}
+            <Clock className="h-8 w-8 text-blue-600" />
+          </div>
+        </div> */}
+        
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Quizzes Completed</p>
+              <p className="text-2xl font-bold text-gray-900">{completedQuizzes?.length || 0}</p>
+            </div>
+            <Brain className="h-8 w-8 text-cyan-600" />
+          </div>
         </div>
-
-        {/* Quiz Performance Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-            Quiz Performance
-          </h2>
-          <div className="h-72">
-            <QuizBarChart scores={score} />
+        
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Average Score</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {completedQuizzes?.length > 0
+                  ? Math.round(
+                      completedQuizzes.reduce((acc, quiz) => acc + (quiz.score || 0), 0) / completedQuizzes.length
+                    )
+                  : 0}%
+              </p>
+            </div>
+            <Award className="h-8 w-8 text-green-600" />
           </div>
         </div>
       </div>
@@ -226,8 +255,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
-</div>
 
 
       {/* Learning Resources Grid */}
@@ -386,7 +413,6 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-    </div>
     </div>
   );
 };
