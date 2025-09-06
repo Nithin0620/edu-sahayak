@@ -5,7 +5,7 @@ axios.defaults.withCredentials = true;
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api"  // Change this to match your backend port
-  : "https://edu-sahayak.onrender.com/api";
+  : "/api";
 
 const useAuthStore = create((set, get) => ({
   isAuthenticated: false,

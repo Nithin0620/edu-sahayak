@@ -6,11 +6,9 @@ const cors = require("cors")
 const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
-const allowedOrigins = [
-  "https://edu-sahayak.vercel.app", // your frontend
-  // you can add localhost for testing:
-  "http://localhost:5173"
-];
+const allowedOrigins = ["*"];
+
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 app.use(
   cors({
@@ -76,7 +74,7 @@ server.listen(PORT, () => {
 });
 
 app.get("/" , (req,res)=>{
-  res.send(`<h1> This is homepage, response from server hance the server is up and running <h1/>`)
+  res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
 })
 
 app.get(/^\/(?!api).*/, (req, res) => {
