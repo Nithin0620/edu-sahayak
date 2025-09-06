@@ -114,7 +114,7 @@ exports.signup = async (req, res) => {
     res.cookie("jwt", token, {
       expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: "none",
     });
 
@@ -179,7 +179,7 @@ exports.login = async (req, res) => {
     res.cookie("jwt", token, {
       expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: "none",
     });
 

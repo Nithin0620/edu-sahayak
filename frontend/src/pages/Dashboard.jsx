@@ -12,6 +12,12 @@ import { useQuizStore } from '../ZustandStore/QuizStore';
 // import { dasboardChatClickHandler } from './ChatBot';
 import QuizBarChart from "../components/QuizBarChart";
 import axios from 'axios';
+
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:4000"
+    : "https://edu-sahayak.onrender.com";
+
 const Dashboard = () => {
   const cardsRef = useRef(null);
   const statsRef = useRef(null);
@@ -43,7 +49,7 @@ const Dashboard = () => {
     try {
       console.log("Fetching quiz scores...");
       const response = await axios.get(
-        "http://localhost:4000/api/score/getuserquizscore",
+        `${BASE_URL}/api/score/getuserquizscore`,
         { withCredentials: true } // ⬅️ needed if you use cookies/JWT
       );
       console.log("Quiz Scores Response:", response.data);
