@@ -10,8 +10,8 @@ import { formatChatDate } from '../../utility/formatChatDate';
 import OnboardingRetakeBanner from '../components/OnboardingRetakeBanner';
 import { useQuizStore } from '../ZustandStore/QuizStore';
 // import { dasboardChatClickHandler } from './ChatBot';
-
-
+import QuizBarChart from "../components/QuizBarChart";
+import axios from 'axios';
 const Dashboard = () => {
   const cardsRef = useRef(null);
   const statsRef = useRef(null);
@@ -168,12 +168,12 @@ const Dashboard = () => {
       <OnboardingRetakeBanner />
 
       {/* Stats Cards */}
-      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
         {/* <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Study Hours</p>
-              <p className="text-2xl font-bold text-gray-900">24.5</p>
+              <p className="text-2xl font-bold text-gray-900">4.5</p>
             </div>
             <Clock className="h-8 w-8 text-blue-600" />
           </div>
@@ -206,33 +206,55 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="mb-10">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Recent Chats</h2>
+      <div className="grid grid-cols-1 mb-5 md:grid-cols-2 gap-8">
+        {/* Recent Chats */}
+        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <MessageCircle className="w-5 h-5 text-blue-600" />
+            Recent Chats
+          </h2>
 
-        {getChatSessions().length > 0 ? (
-          <div className="space-y-3">
-            {getChatSessions().slice(0, 3).map((session) => (
-              <div
-                key={session._id}
-                onClick={() => handleRecentChatClick(session)}
-                title={session.title}
-                className="p-4 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer flex items-start space-x-3 transition"
-              >
-                <div className="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="h-4 w-4 text-blue-600" />
+          {sessions.length > 0 ? (
+            <div className="space-y-4">
+              {sessions.slice(0, 3).map((session) => (
+                <div
+                  key={session._id}
+                  onClick={() => handleRecentChatClick(session)}
+                  title={session.title}
+                  className="p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 cursor-pointer flex items-start space-x-4 transition-all duration-200"
+                >
+                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <MessageCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {session.title}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">
+                      {session.chapter}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {formatChatDate(session.createdAt)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{session.title}</p>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">{session.chapter}</p>
-                  <p className="text-xs text-gray-400">{formatChatDate(session.createdAt)}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No recent chats yet.</p>
+          )}
+        </div>
+
+        {/* Quiz Performance Chart */}
+        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            Quiz Performance
+          </h2>
+          <div className="h-72">
+            <QuizBarChart scores={score} />
           </div>
-        ) : (
-          <p className="text-gray-500">No recent chats yet.</p>
-        )}
-      </div>
+        </div>
+      </div>
 
 
       {/* Learning Resources Grid */}
