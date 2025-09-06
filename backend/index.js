@@ -8,8 +8,7 @@ const PORT = process.env.PORT || 5000
 const {app,server} = require("./config/socketio");
 const allowedOrigins = ["*"];
 
-app.use(express.static(path.join(__dirname, '../frontend/build')));
-
+// CORS configuration
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -29,19 +28,11 @@ app.use(express.urlencoded({ extended: true }));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+// Database connection
+const {dbconnect} = require("./config/database")
+dbconnect();
 
-// app.use((req, res, next) => {
-//   console.log("METHOD:", req.method);
-//   console.log("URL:", req.url);
-//   console.log("HEADERS:", req.headers);
-//   let data = '';
-//   req.on('data', chunk => { data += chunk });
-//   req.on('end', () => {
-//     console.log("RAW BODY:", data);
-//     next();
-//   });
-// });
-
+// API Routes
 const authRoutes = require("./routes/Auth.routes")
 const aiAPiRoutes = require("./routes/AiApi.routes")
 const chatRoutes = require("./routes/chat.routes")
@@ -60,9 +51,18 @@ app.use("/api/quiz",quiz);
 app.use("/api/cards",cards);
 app.use("/api/score",score);
 
+// Serve static files from React build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
+// Handle React routing - send all non-API requests to React app
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+});
 
+// Start server
+server.listen(PORT, () => {
+  console.log("server is running on PORT:" + PORT);
+});
 const {dbconnect} = require("./config/database")
 dbconnect();
 
