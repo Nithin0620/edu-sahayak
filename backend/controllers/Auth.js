@@ -202,6 +202,8 @@ exports.sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
     
+    console.log("Received OTP request for email:", email); // Debug log
+
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -234,24 +236,23 @@ exports.sendOtp = async (req, res) => {
     }
 
     const response = await OTP.create({ email, otp });
-    console.log("OTP created successfully:", { email, otp });
+    console.log("OTP created successfully:", { email, otp }); // Debug log
 
     return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
       data: response
     });
-  } catch (error) {
-    console.error("Error in sendOtp:", error);
+  } catch (e) {
+    console.error("Error in sendOtp:", e);
     return res.status(500).json({
       success: false,
       message: "Error while sending OTP",
-      error: error.message
     });
   }
 };
 
-exports.logout = async (req, res) => {
+exports.logout = (req, res) => {
   try {
     res.cookie("jwt", "", { maxAge: 0 });
     return res
@@ -292,51 +293,6 @@ exports.checkAuth = async (req, res) => {
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-exports.retakeOnboarding = async (req, res) => {
-  try {
-    const { onboard } = req.body;
-    const userId = req.user.userId;
-
-    if (!onboard) {
-      return res.status(400).json({
-        success: false,
-        message: "Onboarding data is required",
-      });
-    }
-
-    // Find user and update profile
-    const user = await User.findById(userId).populate("profile");
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Update profile with new onboarding data and retake date
-    await Profile.findByIdAndUpdate(user.profile._id, {
-      onboard,
-      onboardingRetakeDate: new Date()
-    });
-
-    // Fetch updated user data
-    const updatedUser = await User.findById(userId).populate("profile").select("-password");
-
-    return res.status(200).json({
-      success: true,
-      message: "Onboarding updated successfully",
-      data: updatedUser,
-    });
-
-  } catch (error) {
-    console.error("Retake onboarding error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error occurred while updating onboarding",
-    });
   }
 };
 

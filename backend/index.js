@@ -4,11 +4,16 @@ const express = require("express")
 require("dotenv").config();
 const cors = require("cors")
 const path = require("path")
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
-const allowedOrigins = ["*"];
+const allowedOrigins = [
+  "https://edu-sahayak.vercel.app", // your frontend
+  // you can add localhost for testing:
+  "http://localhost:5173"
+];
 
-// CORS configuration
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -18,21 +23,28 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
+    credentials: true, // 🔥 allow cookies/auth headers
   })
 );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-// Database connection
-const {dbconnect} = require("./config/database")
-dbconnect();
 
-// API Routes
+// app.use((req, res, next) => {
+//   console.log("METHOD:", req.method);
+//   console.log("URL:", req.url);
+//   console.log("HEADERS:", req.headers);
+//   let data = '';
+//   req.on('data', chunk => { data += chunk });
+//   req.on('end', () => {
+//     console.log("RAW BODY:", data);
+//     next();
+//   });
+// });
+
 const authRoutes = require("./routes/Auth.routes")
 const aiAPiRoutes = require("./routes/AiApi.routes")
 const chatRoutes = require("./routes/chat.routes")
@@ -51,18 +63,9 @@ app.use("/api/quiz",quiz);
 app.use("/api/cards",cards);
 app.use("/api/score",score);
 
-// Serve static files from React build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// Handle React routing - send all non-API requests to React app
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-});
 
-// Start server
-server.listen(PORT, () => {
-  console.log("server is running on PORT:" + PORT);
-});
 const {dbconnect} = require("./config/database")
 dbconnect();
 
@@ -75,7 +78,7 @@ server.listen(PORT, () => {
 });
 
 app.get("/" , (req,res)=>{
-  res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  res.send(`<h1> This is homepage, response from server hance the server is up and running <h1/>`)
 })
 
 app.get(/^\/(?!api).*/, (req, res) => {
