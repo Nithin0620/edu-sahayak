@@ -53,6 +53,7 @@ exports.generateQuiz = async (req, res) => {
       session = await ChatSession.create({
         user: userId,
         title: `Quiz - ${subject} | ${chapter}`,
+        type: 'quiz',
         class_num,
         subject,
         chapter,
@@ -88,7 +89,12 @@ exports.generateQuiz = async (req, res) => {
     // 💾 Save or update quiz
     let savedQuiz = await Quiz.findOneAndUpdate(
       { user: userId, session: session._id, cid },
-      { quiz: quizData },
+      { 
+        quiz: quizData,
+        title: `${subject} - ${chapter}`,
+        subject: subject,
+        difficulty: "Medium" // You can make this dynamic based on API response
+      },
       { new: true, upsert: true }
     );
 
@@ -111,22 +117,28 @@ exports.generateQuiz = async (req, res) => {
 
 exports.getAllQuizzes = async (req, res) => {
   try {
-    const userId = req.user.userId; // from auth middleware
+    const userId = req.user.userId;
 
-    // Fetch quizzes for this user + session
-    const quizzes = await Quiz.find({ user: userId });
+    // Fetch quizzes for this user
+    const quizzes = await Quiz.find({ user: userId }).populate('session');
 
     if (!quizzes || quizzes.length === 0) {
       return res.status(200).json({
         success: true,
         quizzes: [],
-        message: "No quizzes found for this session",
+        completedQuizzes: [],
+        message: "No quizzes found",
       });
     }
 
+    // Separate completed and available quizzes
+    const availableQuizzes = quizzes.filter(quiz => !quiz.completed);
+    const completedQuizzes = quizzes.filter(quiz => quiz.completed);
+
     res.status(200).json({
       success: true,
-      quizzes,
+      quizzes: availableQuizzes,
+      completedQuizzes: completedQuizzes,
     });
   } catch (err) {
     console.error("Error fetching quizzes:", err);
@@ -135,40 +147,42 @@ exports.getAllQuizzes = async (req, res) => {
       message: "Server error while fetching quizzes",
     });
   }
-
-
 };
 
+exports.submitQuiz = async (req, res) => {
+  try {
+    const { quizId, answers } = req.body;
 
-
-
-  exports.submitQuiz = async (req, res) => {
-    try {
-      const { quizId, answers } = req.body;
-
-      if (!quizId || !answers) {
-        return res
-          .status(400)
-          .json({ message: "quizId and answers are required" });
-      }
-
-      const quiz = await Quiz.findById(quizId);
-      if (!quiz) {
-        return res.status(404).json({ message: "Quiz not found" });
-      }
-
-      // Update quiz
-      quiz.completed = true;
-      quiz.ans = JSON.stringify(answers); // or store as array if you want
-
-      await quiz.save();
-
-      return res.status(200).json({
-        message: "Quiz submitted successfully",
-        quiz,
-      });
-    } catch (err) {
-      console.error("Submit quiz error:", err);
-      res.status(500).json({ message: "Failed to submit quiz" });
+    if (!quizId || answers === undefined) {
+      return res
+        .status(400)
+        .json({ message: "quizId and answers are required" });
     }
-  };
+
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    // Calculate score percentage
+    const totalQuestions = quiz.quiz.length;
+    const correctAnswers = answers; // This is the count of correct answers
+    const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
+
+    // Update quiz
+    quiz.completed = true;
+    quiz.ans = correctAnswers;
+    quiz.score = scorePercentage;
+
+    await quiz.save();
+
+    return res.status(200).json({
+      message: "Quiz submitted successfully",
+      quiz,
+      score: scorePercentage,
+    });
+  } catch (err) {
+    console.error("Submit quiz error:", err);
+    res.status(500).json({ message: "Failed to submit quiz" });
+  }
+};

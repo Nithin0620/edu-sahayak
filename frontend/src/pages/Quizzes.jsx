@@ -267,17 +267,13 @@ const Quizzes = () => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between text-sm text-gray-600">
                   <span>Questions</span>
-                  <span>{quiz.questions}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>Duration</span>
-                  <span>{quiz.duration} min</span>
+                  <span>{quiz.quiz?.length || 5}</span>
                 </div>
                 {quiz.completed && (
                   <div className="flex items-center justify-between text-sm text-gray-600">
                     <span>Score</span>
                     <span className="font-semibold text-green-600">
-                      {quiz.score}%
+                      {quiz.score || Math.round((quiz.ans / (quiz.quiz?.length || 5)) * 100)}%
                     </span>
                   </div>
                 )}
@@ -308,6 +304,10 @@ const Quizzes = () => {
         )}
       </div>
     </div>
+  );
+};
+
+export default Quizzes;
   );
 };
 

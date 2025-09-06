@@ -7,6 +7,8 @@ import chaptersData from '../data/chapters_per_subject.json';
 import { useChatStore } from '../ZustandStore/chatStore';
 import { MessageCircle } from 'lucide-react';
 import { formatChatDate } from '../../utility/formatChatDate';
+import OnboardingRetakeBanner from '../components/OnboardingRetakeBanner';
+import { useQuizStore } from '../ZustandStore/QuizStore';
 // import { dasboardChatClickHandler } from './ChatBot';
 
 
@@ -87,6 +89,7 @@ const Dashboard = () => {
   };
 
   const {fetchSessions,sessions} = useChatStore();
+  const { fetchQuizzes, completedQuizzes } = useQuizStore();
 
   const handleRecentChatClick = async (session) => {
     // setIsSessionSelected(session)
@@ -94,9 +97,26 @@ const Dashboard = () => {
     navigate('/chatbot');
   };
 
+  // Filter function to get only chat sessions (exclude quiz and flashcard sessions)
+  const getChatSessions = () => {
+    return sessions.filter(session => {
+      const title = session.title?.toLowerCase() || '';
+      const type = session.type?.toLowerCase();
+      
+      // Exclude based on type field or title patterns
+      if (type === 'quiz' || type === 'flashcard') {
+        return false;
+      }
+      
+      // Also exclude based on title patterns for backward compatibility
+      return !title.startsWith('quiz') && !title.startsWith('flashcard');
+    });
+  };
+
 
   useEffect(() => {
-    fetchSessions();  // Load recent chats
+    fetchSessions();
+    fetchQuizzes(); // Fetch quiz data for stats
     gsap.fromTo(
       cardsRef.current.children,
       { opacity: 0, scale: 0.9 },
@@ -116,9 +136,12 @@ const Dashboard = () => {
         <p className="text-gray-600 mt-2">Ready to continue your learning journey?</p>
       </div>
 
+      {/* Onboarding Retake Banner */}
+      <OnboardingRetakeBanner />
+
       {/* Stats Cards */}
-      {/* <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Study Hours</p>
@@ -126,13 +149,13 @@ const Dashboard = () => {
             </div>
             <Clock className="h-8 w-8 text-blue-600" />
           </div>
-        </div>
+        </div> */}
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Quizzes Completed</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-2xl font-bold text-gray-900">{completedQuizzes?.length || 0}</p>
             </div>
             <Brain className="h-8 w-8 text-cyan-600" />
           </div>
@@ -141,20 +164,26 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Achievement Score</p>
-              <p className="text-2xl font-bold text-gray-900">87%</p>
+              <p className="text-sm font-medium text-gray-600">Average Score</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {completedQuizzes?.length > 0
+                  ? Math.round(
+                      completedQuizzes.reduce((acc, quiz) => acc + (quiz.score || 0), 0) / completedQuizzes.length
+                    )
+                  : 0}%
+              </p>
             </div>
             <Award className="h-8 w-8 text-green-600" />
           </div>
         </div>
-      </div> */}
+      </div>
 
       <div className="mb-10">
         <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Recent Chats</h2>
 
-        {sessions.length > 0 ? (
+        {getChatSessions().length > 0 ? (
           <div className="space-y-3">
-            {sessions.slice(0, 3).map((session) => (
+            {getChatSessions().slice(0, 3).map((session) => (
               <div
                 key={session._id}
                 onClick={() => handleRecentChatClick(session)}

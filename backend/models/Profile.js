@@ -78,6 +78,11 @@ const profileSchema = new mongoose.Schema({
       },
    },
 
+   onboardingRetakeDate: {
+      type: Date,
+      default: null
+   },
+
    createdAt: {
       type: Date,
       default: Date.now,

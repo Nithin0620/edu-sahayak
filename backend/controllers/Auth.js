@@ -295,3 +295,48 @@ exports.checkAuth = async (req, res) => {
   }
 };
 
+exports.retakeOnboarding = async (req, res) => {
+  try {
+    const { onboard } = req.body;
+    const userId = req.user.userId;
+
+    if (!onboard) {
+      return res.status(400).json({
+        success: false,
+        message: "Onboarding data is required",
+      });
+    }
+
+    // Find user and update profile
+    const user = await User.findById(userId).populate("profile");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Update profile with new onboarding data and retake date
+    await Profile.findByIdAndUpdate(user.profile._id, {
+      onboard,
+      onboardingRetakeDate: new Date()
+    });
+
+    // Fetch updated user data
+    const updatedUser = await User.findById(userId).populate("profile").select("-password");
+
+    return res.status(200).json({
+      success: true,
+      message: "Onboarding updated successfully",
+      data: updatedUser,
+    });
+
+  } catch (error) {
+    console.error("Retake onboarding error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while updating onboarding",
+    });
+  }
+};
+

@@ -129,6 +129,43 @@ const useAuthStore = create((set, get) => ({
       }
       },
 
+   retakeOnboarding: async (onboardingData) => {
+    try {
+      set({ loading: true, error: null });
+      
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `${BASE_URL}/api/auth/retake-onboarding`,
+        { onboard: onboardingData },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.success) {
+        set((state) => ({
+          user: {
+            ...state.user,
+            profile: {
+              ...state.user.profile,
+              onboard: onboardingData,
+              onboardingRetakeDate: new Date().toISOString()
+            }
+          },
+          loading: false,
+        }));
+        return true;
+      }
+    } catch (error) {
+      console.error("Retake onboarding error:", error);
+      set({
+        error: error.response?.data?.message || "Failed to update onboarding",
+        loading: false,
+      });
+      return false;
+    }
+  },
+
 }));
 
 export default useAuthStore;

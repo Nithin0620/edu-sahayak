@@ -6,6 +6,9 @@ const quizSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     session: { type: mongoose.Schema.Types.ObjectId, ref: "ChatSession", required: true },
     cid: { type: String, required: true },
+    title: { type: String, default: "Quiz" },
+    subject: { type: String },
+    difficulty: { type: String, default: "Medium" },
     quiz: [
       {
         question: String,
@@ -21,6 +24,11 @@ const quizSchema = new mongoose.Schema(
 
     ans:{
       type:Number,
+    },
+
+    score: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }
