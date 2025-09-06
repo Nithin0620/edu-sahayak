@@ -4,7 +4,7 @@ const express = require("express")
 require("dotenv").config();
 const cors = require("cors")
 const path = require("path")
-const PORT = process.env.PORT || 5000 || 8000
+const PORT = process.env.PORT || 5000
 const {app,server} = require("./config/socketio");
 const allowedOrigins = ["*"];
 
