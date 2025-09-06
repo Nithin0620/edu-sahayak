@@ -15,8 +15,10 @@ export const useYoutubeStore = create((set) => ({
       set({ loading: true, error: null });
       try {
          const response = await axios.get(`${BASE_URL}/youtube`, {
-         params: { query } 
-         });
+         params: { query }} ,{
+        withCredentials:true
+      }
+         );
 
          if (response.data?.success) {
          set({

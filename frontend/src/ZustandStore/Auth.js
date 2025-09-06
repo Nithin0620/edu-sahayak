@@ -63,7 +63,9 @@ const useAuthStore = create((set, get) => ({
 
    logout: async () => {
       try {
-         await axios.post(`${BASE_URL}/auth/logout`);
+         await axios.post(`${BASE_URL}/auth/logout`,{
+        withCredentials:true
+      });
       } catch (e) {
          console.error('Logout error:', e);
       }
@@ -75,7 +77,9 @@ const useAuthStore = create((set, get) => ({
       set({ loading: true, error: null });
       try {
          console.log("Sending OTP to:", email);
-         const response = await axios.post(`${BASE_URL}/auth/sendotp`, { email });
+         const response = await axios.post(`${BASE_URL}/auth/sendotp`, { email },{
+        withCredentials:true
+      });
          console.log("OTP Response:", response.data);
          
          if (response.data?.success) {
@@ -100,7 +104,9 @@ const useAuthStore = create((set, get) => ({
    signup: async (finalData, navigate) => {
       set({ loading: true, error: null });
       try {
-         const response = await axios.post(`${BASE_URL}/auth/signup`, finalData);
+         const response = await axios.post(`${BASE_URL}/auth/signup`, finalData,{
+        withCredentials:true
+      });
          console.log(response)
          if (response.data?.success) {
          get().loginSuccess(response.data.data);
@@ -116,7 +122,9 @@ const useAuthStore = create((set, get) => ({
    login: async (credentials, navigate) => {
       set({ loading: true, error: null });
       try {
-         const response = await axios.post(`${BASE_URL}/auth/login`, credentials);
+         const response = await axios.post(`${BASE_URL}/auth/login`, credentials,{
+        withCredentials:true
+      });
          if (response.data?.success) {
             get().loginSuccess(response.data.data);
             navigate('/'); 
@@ -133,13 +141,12 @@ const useAuthStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       
-      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${BASE_URL}/api/auth/retake-onboarding`,
-        { onboard: onboardingData },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { onboard: onboardingData },{
+        withCredentials:true
+      }
+        
       );
 
       if (response.data.success) {

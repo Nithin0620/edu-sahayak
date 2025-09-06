@@ -14,10 +14,8 @@ app.use(
       if (!origin) return callback(null, true);
 
       const allowedOrigins = [
-        "http://localhost:3000",               // local frontend
-        "http://localhost:5173",               // if using Vite
-        "https://edu-sahayak.vercel.app",      // deployed frontend
-        "https://edu-sahayak.onrender.com"     // deployed backend
+       "https://edu-sahayak.vercel.app",
+       "http://localhost:5173" // deployed backend
       ];
 
       if (allowedOrigins.includes(origin)) {
