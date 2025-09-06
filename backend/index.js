@@ -7,8 +7,7 @@ const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
 const allowedOrigins = [
-  "https://edu-sahayak.vercel.app", // your frontend
-  // you can add localhost for testing:
+  "https://edu-sahayak.vercel.app",
   "http://localhost:5173"
 ];
 
@@ -21,9 +20,10 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // 🔥 allow cookies/auth headers
+    credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
