@@ -1,19 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import axios from "axios";
-import {
-  BookOpen,
-  X,
-  CheckCircle,
-} from "lucide-react";
-import useAuthStore from "../ZustandStore/Auth";
-import { useNavigate } from "react-router-dom";
-import chaptersData from "../data/chapters_per_subject.json";
-import { useChatStore } from "../ZustandStore/chatStore";
-import { MessageCircle } from "lucide-react";
-import { formatChatDate } from "../../utility/formatChatDate";
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { BookOpen, Users, Brain, CreditCard, TrendingUp, Clock, Award, X, CheckCircle } from 'lucide-react';
+import useAuthStore from '../ZustandStore/Auth';
+import { useNavigate } from 'react-router-dom';
+import chaptersData from '../data/chapters_per_subject.json';
+import { useChatStore } from '../ZustandStore/chatStore';
+import { MessageCircle } from 'lucide-react';
+import { formatChatDate } from '../../utility/formatChatDate';
+import OnboardingRetakeBanner from '../components/OnboardingRetakeBanner';
+import { useQuizStore } from '../ZustandStore/QuizStore';
+// import { dasboardChatClickHandler } from './ChatBot';
 import QuizBarChart from "../components/QuizBarChart";
-
+import axios from 'axios';
 const Dashboard = () => {
   const cardsRef = useRef(null);
   const statsRef = useRef(null);
@@ -155,6 +153,38 @@ const Dashboard = () => {
             Recent Chats
           </h2>
 
+      {/* Stats Cards */}
+      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Study Hours</p>
+              <p className="text-2xl font-bold text-gray-900">4.5</p>
+            </div>
+          ) : (
+            <p className="text-gray-500">No recent chats yet.</p>
+          )}
+        </div>
+
+        {/* Quiz Performance Chart */}
+        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            Quiz Performance
+          </h2>
+          <div className="h-72">
+            <QuizBarChart scores={score} />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 mb-5 md:grid-cols-2 gap-8">
+        {/* Recent Chats */}
+        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <MessageCircle className="w-5 h-5 text-blue-600" />
+            Recent Chats
+          </h2>
+
           {sessions.length > 0 ? (
             <div className="space-y-4">
               {sessions.slice(0, 3).map((session) => (
@@ -195,7 +225,10 @@ const Dashboard = () => {
             <QuizBarChart scores={score} />
           </div>
         </div>
-      </div>
+      </div>
+
+</div>
+
 
       {/* Learning Resources Grid */}
       <div className="mb-8">
@@ -353,6 +386,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };
