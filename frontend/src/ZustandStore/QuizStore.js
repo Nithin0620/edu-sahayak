@@ -8,7 +8,6 @@ const BASE_URL =
 
 export const useQuizStore = create((set, get) => ({
   quizzes: [],
-
   loading: false,
   error: null,
   sessionId: null,
@@ -56,6 +55,7 @@ export const useQuizStore = create((set, get) => ({
 
       set({
         quizzes: res.data.quizzes || [],
+        completedQuizzes: res.data.completedQuizzes || [],
         loading: false,
       });
     } catch (err) {
@@ -69,21 +69,23 @@ export const useQuizStore = create((set, get) => ({
 
   submitQuiz: async ({ quizId, answers }) => {
     try {
-
-      console.log("jodkhabdfjadfj",quizId)
+      console.log("Submitting quiz:", quizId);
       set({ loading: true, error: null });
       const token = localStorage.getItem("token");
-      // Debug: log payload
-      console.log("Submitting quiz:", { quizId, answers });
+      
       const res = await axios.post(
         `${BASE_URL}/api/quiz/submitquiz`,
         { quizId, answers },
-        // { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      // After successful submission, refresh the quizzes to update the lists
+      const { fetchQuizzes } = get();
+      await fetchQuizzes();
+      
       set({ loading: false });
       return res.data;
     } catch (err) {
-      // Debug: log backend error response
       console.error("Quiz submit error:", err);
       if (err.response) {
         console.error("Backend error response:", err.response.data);
@@ -95,6 +97,4 @@ export const useQuizStore = create((set, get) => ({
       return err.response?.data || null;
     }
   },
-
-
 }));

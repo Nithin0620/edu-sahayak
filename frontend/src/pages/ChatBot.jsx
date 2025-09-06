@@ -495,6 +495,22 @@ const handleSendMessage = async (e) => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Filter function to get only chat sessions (exclude quiz and flashcard sessions)
+  const getChatSessions = () => {
+    return sessions.filter(session => {
+      const title = session.title?.toLowerCase() || '';
+      const type = session.type?.toLowerCase();
+      
+      // Exclude based on type field or title patterns
+      if (type === 'quiz' || type === 'flashcard') {
+        return false;
+      }
+      
+      // Also exclude based on title patterns for backward compatibility
+      return !title.startsWith('quiz') && !title.startsWith('flashcard');
+    });
+  };
+
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
@@ -603,8 +619,8 @@ const handleSendMessage = async (e) => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                   <p className="text-gray-500 mt-2">Loading chats...</p>
                 </div>
-              ) : sessions.length > 0 ? (
-                sessions.map((session) => (
+              ) : getChatSessions().length > 0 ? (
+                getChatSessions().map((session) => (
                   <div
                     key={session._id}
                     title={session.title}

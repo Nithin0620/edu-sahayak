@@ -54,6 +54,7 @@ exports.generateFlashcards = async (req, res) => {
       session = await ChatSession.create({
         user: userId,
         title: `Flashcard ${class_num} - ${subject}`,
+        type: 'flashcard',
         class_num,
         subject,
         chapter,

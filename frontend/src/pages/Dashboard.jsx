@@ -1,18 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import axios from "axios";
-import {
-  BookOpen,
-  X,
-  CheckCircle,
-} from "lucide-react";
-import useAuthStore from "../ZustandStore/Auth";
-import { useNavigate } from "react-router-dom";
-import chaptersData from "../data/chapters_per_subject.json";
-import { useChatStore } from "../ZustandStore/chatStore";
-import { MessageCircle } from "lucide-react";
-import { formatChatDate } from "../../utility/formatChatDate";
-import QuizBarChart from "../components/QuizBarChart";
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { BookOpen, Users, Brain, CreditCard, TrendingUp, Clock, Award, X, CheckCircle } from 'lucide-react';
+import useAuthStore from '../ZustandStore/Auth';
+import { useNavigate } from 'react-router-dom';
+import chaptersData from '../data/chapters_per_subject.json';
+import { useChatStore } from '../ZustandStore/chatStore';
+import { MessageCircle } from 'lucide-react';
+import { formatChatDate } from '../../utility/formatChatDate';
+import OnboardingRetakeBanner from '../components/OnboardingRetakeBanner';
+import { useQuizStore } from '../ZustandStore/QuizStore';
+// import { dasboardChatClickHandler } from './ChatBot';
+
 
 const Dashboard = () => {
   const cardsRef = useRef(null);
@@ -111,16 +109,35 @@ const Dashboard = () => {
     );
   };
 
-  const { fetchSessions, sessions } = useChatStore();
+  const {fetchSessions,sessions} = useChatStore();
+  const { fetchQuizzes, completedQuizzes } = useQuizStore();
 
   const handleRecentChatClick = async (session) => {
     // setIsSessionSelected(session)
     // dasboardChatClickHandler(session);
-    navigate("/chatbot");
+    navigate('/chatbot');
   };
 
+  // Filter function to get only chat sessions (exclude quiz and flashcard sessions)
+  const getChatSessions = () => {
+    return sessions.filter(session => {
+      const title = session.title?.toLowerCase() || '';
+      const type = session.type?.toLowerCase();
+      
+      // Exclude based on type field or title patterns
+      if (type === 'quiz' || type === 'flashcard') {
+        return false;
+      }
+      
+      // Also exclude based on title patterns for backward compatibility
+      return !title.startsWith('quiz') && !title.startsWith('flashcard');
+    });
+  };
+
+
   useEffect(() => {
-    fetchSessions(); // Load recent chats
+    fetchSessions();
+    fetchQuizzes(); // Fetch quiz data for stats
     gsap.fromTo(
       cardsRef.current.children,
       { opacity: 0, scale: 0.9 },
@@ -147,55 +164,76 @@ const Dashboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 mb-5 md:grid-cols-2 gap-8">
-        {/* Recent Chats */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-blue-600" />
-            Recent Chats
-          </h2>
+      {/* Onboarding Retake Banner */}
+      <OnboardingRetakeBanner />
 
-          {sessions.length > 0 ? (
-            <div className="space-y-4">
-              {sessions.slice(0, 3).map((session) => (
-                <div
-                  key={session._id}
-                  onClick={() => handleRecentChatClick(session)}
-                  title={session.title}
-                  className="p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-blue-50 cursor-pointer flex items-start space-x-4 transition-all duration-200"
-                >
-                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <MessageCircle className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {session.title}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate mt-0.5">
-                      {session.chapter}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {formatChatDate(session.createdAt)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+      {/* Stats Cards */}
+      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Study Hours</p>
+              <p className="text-2xl font-bold text-gray-900">24.5</p>
             </div>
-          ) : (
-            <p className="text-gray-500">No recent chats yet.</p>
-          )}
+            <Clock className="h-8 w-8 text-blue-600" />
+          </div>
+        </div> */}
+        
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Quizzes Completed</p>
+              <p className="text-2xl font-bold text-gray-900">{completedQuizzes?.length || 0}</p>
+            </div>
+            <Brain className="h-8 w-8 text-cyan-600" />
+          </div>
         </div>
-
-        {/* Quiz Performance Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-            Quiz Performance
-          </h2>
-          <div className="h-72">
-            <QuizBarChart scores={score} />
+        
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Average Score</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {completedQuizzes?.length > 0
+                  ? Math.round(
+                      completedQuizzes.reduce((acc, quiz) => acc + (quiz.score || 0), 0) / completedQuizzes.length
+                    )
+                  : 0}%
+              </p>
+            </div>
+            <Award className="h-8 w-8 text-green-600" />
           </div>
         </div>
       </div>
+
+      <div className="mb-10">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Recent Chats</h2>
+
+        {getChatSessions().length > 0 ? (
+          <div className="space-y-3">
+            {getChatSessions().slice(0, 3).map((session) => (
+              <div
+                key={session._id}
+                onClick={() => handleRecentChatClick(session)}
+                title={session.title}
+                className="p-4 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer flex items-start space-x-3 transition"
+              >
+                <div className="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{session.title}</p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">{session.chapter}</p>
+                  <p className="text-xs text-gray-400">{formatChatDate(session.createdAt)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500">No recent chats yet.</p>
+        )}
+      </div>
+
 
       {/* Learning Resources Grid */}
       <div className="mb-8">
