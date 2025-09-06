@@ -50,6 +50,7 @@ const groupsRoutes = require("./routes/groups")
 const groupaMessage = require("./routes/GRPMessage")
 const quiz = require("./routes/Quiz.routes")
 const cards = require("./routes/flashcardRoutes")
+const score = require("./routes/userQuizAns");
 
 app.use("/api/auth",authRoutes);
 app.use("/api/requirement",aiAPiRoutes);
@@ -58,7 +59,7 @@ app.use("/api/group",groupsRoutes);
 app.use("/api/grpmsg",groupaMessage);
 app.use("/api/quiz",quiz);
 app.use("/api/cards",cards);
-
+app.use("/api/score",score);
 
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
