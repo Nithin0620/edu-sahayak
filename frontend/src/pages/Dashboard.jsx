@@ -3,12 +3,6 @@ import { gsap } from "gsap";
 import axios from "axios";
 import {
   BookOpen,
-  Users,
-  Brain,
-  CreditCard,
-  TrendingUp,
-  Clock,
-  Award,
   X,
   CheckCircle,
 } from "lucide-react";
@@ -18,7 +12,6 @@ import chaptersData from "../data/chapters_per_subject.json";
 import { useChatStore } from "../ZustandStore/chatStore";
 import { MessageCircle } from "lucide-react";
 import { formatChatDate } from "../../utility/formatChatDate";
-// import { dasboardChatClickHandler } from './ChatBot';
 import QuizBarChart from "../components/QuizBarChart";
 
 const Dashboard = () => {
