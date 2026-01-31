@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api/chat"
-  : "https://edu-sahayak.onrender.com/api/chat";
+  : "https://edu-sahayak-ykp2.onrender.com/api/chat";
 
 
 export const useChatStore = create((set, get) => ({
