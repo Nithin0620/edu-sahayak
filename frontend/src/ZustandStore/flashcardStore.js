@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000"
-  : "";
+  : "https://edu-sahayak.onrender.com";
 
 export const useFlashcardStore = create((set, get) => ({
   loading: false,
@@ -25,10 +25,10 @@ export const useFlashcardStore = create((set, get) => ({
           class_num,
           subject,
           chapter
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
         }
+        ,{
+        withCredentials:true
+      }
       );
 
       // Add the new set to existing sets
@@ -53,9 +53,10 @@ export const useFlashcardStore = create((set, get) => ({
       set({ loading: true, error: null });
 
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/cards/getallflashcards`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`${BASE_URL}/api/cards/getallflashcards`,{
+        withCredentials:true
+      }
+      );
 
       set({
         flashcardSets: response.data || [],

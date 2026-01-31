@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api/requirement"
-  : "/api/requirement";
+  : "https://edu-sahayak.onrender.com/api/requirement";
 
 
 export const useYoutubeStore = create((set) => ({
@@ -15,8 +15,8 @@ export const useYoutubeStore = create((set) => ({
       set({ loading: true, error: null });
       try {
          const response = await axios.get(`${BASE_URL}/youtube`, {
-         params: { query } 
-         });
+         params: { query }} 
+         );
 
          if (response.data?.success) {
          set({

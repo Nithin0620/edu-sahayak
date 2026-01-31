@@ -6,26 +6,36 @@ const cors = require("cors")
 const path = require("path")
 const PORT = process.env.PORT || 5000 || 8000
 const {app,server} = require("./config/socketio");
-const allowedOrigins = [
-  "https://edu-sahayak.vercel.app", // your frontend
-  // you can add localhost for testing:
-  "http://localhost:5173"
-];
-
-app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        "http://localhost:3000",               // local frontend
+        "http://localhost:5174",               // if using Vite
+        "http://localhost:5174/",               // if using Vite
+        "http://localhost:5173",               // if using Vite
+        "http://localhost:5173/",               // if using Vite
+        "https://edu-sahayak.vercel.app",      // deployed frontend
+        "https://edu-sahayak.onrender.com"     // deployed backend
+      ];
+
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // 🔥 allow cookies/auth headers
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
+    exposedHeaders: ["Authorization"],
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -45,7 +55,7 @@ app.use(cookieParser());
 //   });
 // });
 
-const authRoutes = require("./routes/Auth.routes")
+const authRoutes = require("./routes/auth")
 const aiAPiRoutes = require("./routes/AiApi.routes")
 const chatRoutes = require("./routes/chat.routes")
 const groupsRoutes = require("./routes/groups")

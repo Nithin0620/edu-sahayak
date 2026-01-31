@@ -1,13 +1,16 @@
 // store/useAuthStore.js
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api"  // Change this to match your backend port
-  : "/api";
+  : "https://edu-sahayak.onrender.com/api";
 
-const useAuthStore = create((set, get) => ({
+const useAuthStore = create(
+  persist(
+    (set, get) => ({
   isAuthenticated: false,
   user: null,
   loading: false,
@@ -30,7 +33,7 @@ const useAuthStore = create((set, get) => ({
 
    checkAuth: async () => {
       try {
-         const response = await axios.get(`${BASE_URL}/auth/check`, {
+         const response = await axios.get(`${BASE_URL}/auth/check-auth`, {
             withCredentials: true,
          });
 
@@ -75,7 +78,7 @@ const useAuthStore = create((set, get) => ({
       set({ loading: true, error: null });
       try {
          console.log("Sending OTP to:", email);
-         const response = await axios.post(`${BASE_URL}/auth/sendotp`, { email });
+         const response = await axios.post(`${BASE_URL}/auth/send-otp`, { email });
          console.log("OTP Response:", response.data);
          
          if (response.data?.success) {
@@ -122,8 +125,8 @@ const useAuthStore = create((set, get) => ({
             navigate('/'); 
          }
       } catch (error) {
-         console.error("Login error:", error.response?.data);
-         set({ error: error.response?.data?.message || 'Login failed' });
+         console.error("Login error:", error.response?.data || error.message);
+         set({ error: error.response?.data?.message || error.message || 'Login failed' });
       } finally {
          set({ loading: false });
       }
@@ -135,7 +138,7 @@ const useAuthStore = create((set, get) => ({
       
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `${BASE_URL}/api/auth/retake-onboarding`,
+        `${BASE_URL}/auth/retake-onboarding`,
         { onboard: onboardingData },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -166,6 +169,15 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-}));
+}),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        user: state.user,
+      }),
+    }
+  )
+);
 
 export default useAuthStore;

@@ -22,9 +22,18 @@ exports.chatWithAI = async (req, res) => {
     let messages = [];
     let isNewSession = false;
 
-    const user = User.findById(userId);
+    console.log('hello')
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     // ✅ Case 1: Existing Session
+    console.log('hello2')
     if (sessionId) {
       session = await ChatSession.findOne({ _id: sessionId, user: userId });
 
@@ -37,18 +46,20 @@ exports.chatWithAI = async (req, res) => {
 
       cid = session.cid;
       console.log(session)
-      console.log("in the old one ",cid)
+      console.log("in the old one ", cid)
       const previousMessages = await ChatMessage.find({ session: sessionId }).sort({ createdAt: 1 });
       previousMessages.forEach(doc => messages.push(...doc.messages));
 
     } else {
       // ✅ Case 2: New Session
+      console.log('Calling upsert-chapter with:', { class_num, subject, chapter });
       const upsertRes = await axios.get(
         'https://InsaneJSK-Code4Bharat-API.hf.space/upsert-chapter',
         {
           params: { class_num, subject, chapter }
         }
       );
+      console.log('upserRes:', upsertRes.data)
 
       cid = upsertRes.data?.cid;
       if (!cid) {
@@ -66,7 +77,7 @@ exports.chatWithAI = async (req, res) => {
         chapter,
         cid, // ✅ Save cid in DB
       });
-      console.log("new Upsert ,",cid)
+      console.log("new Upsert ,", cid)
 
       isNewSession = true;
     }
@@ -82,11 +93,11 @@ exports.chatWithAI = async (req, res) => {
       // class_num,
       // subject,
       // chapter,
-      
-        profile: user.onboard,
-      
+
+      profile: user.onboard,
+
     };
-   //  console.log("📦 Payload being sent to chat-ncert:", payload);
+    //  console.log("📦 Payload being sent to chat-ncert:", payload);
 
     const response = await axios.post(
       "https://InsaneJSK-Code4Bharat-API.hf.space/chat-ncert",
@@ -136,6 +147,7 @@ exports.chatWithAI = async (req, res) => {
 
   } catch (err) {
     console.error("Chat error:", err?.response?.data || err.message);
+    console.error("Full error:", err);
     return res.status(500).json({
       success: false,
       message: "Chat failed",
@@ -151,28 +163,28 @@ exports.getUserSessions = async (req, res) => {
   const { userId } = req.user;
 
   try {
-      const sessions = await ChatSession.find({ user: userId }).sort({ createdAt: -1 });
-      return res.status(200).json({ success: true, data: sessions });
-   } 
-   catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: 'Failed to fetch sessions' });
-   }
+    const sessions = await ChatSession.find({ user: userId }).sort({ createdAt: -1 });
+    return res.status(200).json({ success: true, data: sessions });
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch sessions' });
+  }
 };
 
 exports.getMessagesBySession = async (req, res) => {
   const { sessionId } = req.params;
 
-   try {
-      const chatDocs = await ChatMessage.find({ session: sessionId }).sort({ createdAt: 1 });
+  try {
+    const chatDocs = await ChatMessage.find({ session: sessionId }).sort({ createdAt: 1 });
 
-      const allMessages = chatDocs.reduce((acc, doc) => {
-         return acc.concat(doc.messages);
-      }, []);
+    const allMessages = chatDocs.reduce((acc, doc) => {
+      return acc.concat(doc.messages);
+    }, []);
 
-      return res.status(200).json({ success: true, messages: allMessages });
-   } catch (err) {
-      console.error(err);
-      return res.status(500).json({ success: false, message: 'Failed to fetch messages' });
-   }
+    return res.status(200).json({ success: true, messages: allMessages });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch messages' });
+  }
 };

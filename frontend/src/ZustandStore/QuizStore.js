@@ -4,7 +4,7 @@ import axios from "axios";
 const BASE_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:4000"
-    : "";
+    : "https://edu-sahayak.onrender.com";
 
 export const useQuizStore = create((set, get) => ({
   quizzes: [],
@@ -49,9 +49,10 @@ export const useQuizStore = create((set, get) => ({
       set({ loading: true, error: null });
 
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${BASE_URL}/api/quiz/getallquiz`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(`${BASE_URL}/api/quiz/getallquiz`,{
+        withCredentials:true
+      }
+      );
 
       set({
         quizzes: res.data.quizzes || [],
@@ -75,8 +76,9 @@ export const useQuizStore = create((set, get) => ({
       
       const res = await axios.post(
         `${BASE_URL}/api/quiz/submitquiz`,
-        { quizId, answers },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { quizId, answers },{
+        withCredentials:true
+      }
       );
       
       // After successful submission, refresh the quizzes to update the lists

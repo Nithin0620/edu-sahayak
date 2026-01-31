@@ -14,6 +14,7 @@ import ChatBot from './pages/ChatBot';
 import DashboardLayout from './layouts/DashboardLayout';
 import SignupPage from './pages/SignupPage';
 import OnboardingPage from './pages/OnboardingPage';
+import OnboardingRetakePage from './pages/OnboardingRetakePage';
 import OtpVerificationPage from './pages/OtpVerificationPage';
 import useAuthStore from './ZustandStore/Auth';
 import PublicRoute from './components/PublicRoute';
@@ -26,8 +27,12 @@ function App() {
   const {checkAuth,isAuthenticated,user} = useAuthStore();
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    // Only check auth if we think we're authenticated (from localStorage)
+    // This prevents unnecessary 401 errors on first load
+    if (isAuthenticated) {
+      checkAuth();
+    }
+  }, []);
   return (
   
       <Router>
@@ -62,6 +67,12 @@ function App() {
               <PublicRoute>
                 <OnboardingPage />
               </PublicRoute>
+            } />
+
+            <Route path="/onboarding-retake" element={
+              <DashboardLayout>
+                <OnboardingRetakePage />
+              </DashboardLayout>
             } />
 
             <Route path="/verify-email" element={

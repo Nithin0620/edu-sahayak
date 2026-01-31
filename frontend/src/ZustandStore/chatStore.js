@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api/chat"
-  : "/api/chat";
+  : "https://edu-sahayak.onrender.com/api/chat";
 
 
 export const useChatStore = create((set, get) => ({
@@ -33,6 +33,8 @@ export const useChatStore = create((set, get) => ({
         class_num,
         subject,
         chapter,
+      },{
+        withCredentials:true
       });
 
       if (response.data?.success) {
@@ -52,7 +54,9 @@ export const useChatStore = create((set, get) => ({
     set({ SidebarLoading: true, error: null })
 
     try {
-      const response = await axios.get(`${BASE_URL}/sessions`)
+      const response = await axios.get(`${BASE_URL}/sessions`,{
+        withCredentials:true
+      })
 
       set({ sessions: response.data?.data || [] })
     }
@@ -67,7 +71,9 @@ export const useChatStore = create((set, get) => ({
   fetchMessagesBySessionId: async (sessionId) => {
     set({ loading: true, error: null })
     try {
-      const response = await axios.get(`${BASE_URL}/messages/${sessionId}`)
+      const response = await axios.get(`${BASE_URL}/messages/${sessionId}`,{
+        withCredentials:true
+      })
       // console.log("response",response)
 
       set({ 

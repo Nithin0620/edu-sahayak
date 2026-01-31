@@ -72,7 +72,7 @@ def get_top_videos(query: str, limit: int = 6, top_n: int = 3):
     return sorted(results, key=lambda v: v['score'], reverse=True)[:top_n]
 
 
-# 🧪 CLI usage
+# CLI usage
 if __name__ == "__main__":
     query = input("Enter YouTube search query: ")
     results = get_top_videos(query)

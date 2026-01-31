@@ -81,10 +81,10 @@ const OnboardingRetakeBanner = () => {
             }
           </p>
           
-          <div className="flex items-center text-xs text-gray-600 mb-4">
+          {/* <div className="flex items-center text-xs text-gray-600 mb-4">
             <Calendar className="h-4 w-4 mr-1" />
             <span>Account created: {formatAccountCreatedDate(user.createdAt)}</span>
-          </div>
+          </div> */}
 
           {user.profile?.onboardingRetakeDate && (
             <div className="flex items-center text-xs text-gray-600 mb-4">
