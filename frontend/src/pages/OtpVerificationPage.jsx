@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Mail, Hash } from 'lucide-react';
+import { BookOpen, Mail, Hash, Loader, CheckCircle, AlertCircle } from 'lucide-react';
 import useAuthStore from '../ZustandStore/Auth';
 
 const OtpVerificationPage = () => {
    const [otp, setOtp] = useState('');
+   const [resendMsg, setResendMsg] = useState('');
    const navigate = useNavigate();
 
-   const { signup, sendOTP, formData } = useAuthStore();
+   const { signup, sendOTP, formData, loading, error } = useAuthStore();
 
    const handleSubmit = (e) => {
       e.preventDefault();
+      setResendMsg('');
       if (!formData) {
          alert('Missing signup data. Please go back and fill the form again.');
          navigate('/signup');
@@ -21,13 +23,16 @@ const OtpVerificationPage = () => {
          ...formData,
          otp,
       };
-      // console.log(finalData)
       signup(finalData, navigate);
    };
 
-   const handleResend = () => {
+   const handleResend = async () => {
       if (formData?.email) {
-         sendOTP(formData.email, navigate);
+         setResendMsg('');
+         const success = await sendOTP(formData.email);
+         if (success) {
+            setResendMsg('Mail sent successfully');
+         }
       }
    };
 
@@ -47,6 +52,18 @@ const OtpVerificationPage = () => {
          </div>
 
          <div className="bg-white rounded-lg shadow-xl p-8">
+            {resendMsg && (
+               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-700 text-sm flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  {resendMsg}
+               </div>
+            )}
+            {error && (
+               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  {error}
+               </div>
+            )}
             <form className="space-y-6" onSubmit={handleSubmit}>
                <div>
                <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -80,9 +97,17 @@ const OtpVerificationPage = () => {
                <div>
                <button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md disabled:opacity-50 flex items-center justify-center"
                >
-                  Verify & Signup
+                  {loading ? (
+                     <>
+                        <Loader className="animate-spin mr-2 h-4 w-4" />
+                        Verifying...
+                     </>
+                  ) : (
+                     "Verify & Signup"
+                  )}
                </button>
                </div>
 
@@ -91,6 +116,7 @@ const OtpVerificationPage = () => {
                   type="button"
                   className="text-sm text-blue-600 hover:underline mt-2"
                   onClick={handleResend}
+                  disabled={loading}
                >
                   Resend OTP
                </button>

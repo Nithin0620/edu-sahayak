@@ -74,24 +74,21 @@ app.use("/api/quiz",quiz);
 app.use("/api/cards",cards);
 app.use("/api/score",score);
 
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-
 const {dbconnect} = require("./config/database")
 dbconnect();
 
-// Must come LAST — after all routes
+if (process.env.DEPLOYING !== 'true') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-
-
-server.listen(PORT, () => {
-  console.log("server is running on PORT:" + PORT);
-});
+  app.get(/^\/(?!api).*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 app.get("/" , (req,res)=>{
   res.send(`<h1> This is homepage, response from server hance the server is up and running <h1/>`)
 })
 
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+server.listen(PORT, () => {
+  console.log("server is running on PORT:" + PORT);
 });

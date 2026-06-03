@@ -397,7 +397,15 @@ const handleSendMessage = async (e) => {
 
       fetchSessions();
     } else {
-      throw new Error('No response from server');
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 3,
+          type: 'assistant',
+          content: useChatStore.getState().error || 'Something went wrong. Please try again.',
+          timestamp: new Date(),
+        },
+      ]);
     }
   } catch (error) {
     console.error("this is the error",error);
@@ -406,7 +414,7 @@ const handleSendMessage = async (e) => {
       {
         id: Date.now() + 4,
         type: 'assistant',
-        content: 'Something went wrong. Please try again.',
+        content: error?.response?.data?.message || 'Something went wrong. Please try again.',
         timestamp: new Date(),
       },
     ]);

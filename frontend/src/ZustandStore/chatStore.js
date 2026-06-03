@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const BASE_URL = process.env.NODE_ENV === "development"
   ? "http://localhost:4000/api/chat"
-  : "https://edu-sahayak-ykp2.onrender.com/api/chat";
+  : "https://edu-sahayak-u9qc.onrender.com/api/chat";
 
 
 export const useChatStore = create((set, get) => ({
@@ -40,9 +40,12 @@ export const useChatStore = create((set, get) => ({
       if (response.data?.success) {
         return response.data; // Return the full object with reply & messages
       }
+      set({ error: response.data?.message || 'Failed to send message' });
+      return null;
 
     } catch (err) {
-      set({ error: err.message || 'Failed to send message' });
+      const msg = err.response?.data?.message || err.message || 'Failed to send message';
+      set({ error: msg });
       return null;
 
     } finally {

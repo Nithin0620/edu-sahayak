@@ -5,7 +5,7 @@ import useAuthStore from '../ZustandStore/Auth';
 
 const OnboardingPage = () => {
    const navigate = useNavigate();
-   const { sendOTP, formData, loading, updateFormData } = useAuthStore();
+   const { sendOTP, formData, loading, error, updateFormData } = useAuthStore();
    
    // Debug: Log formData on component mount
    // console.log("OnboardingPage - Current formData:", formData);
@@ -94,6 +94,35 @@ const OnboardingPage = () => {
       };
    };
 
+   const sendOtpAndNavigate = async () => {
+      const { formData: currentFormData } = useAuthStore.getState();
+      
+      if (currentFormData?.email) {
+         const success = await sendOTP(currentFormData.email);
+         if (success) {
+            navigate("/verify-email");
+         }
+      } else {
+         alert("Email not found. Please go back to signup.");
+         navigate("/signup");
+      }
+   };
+
+   const handleSkip = async () => {
+      const defaultOnboard = {
+         eq_score: 15,
+         eq_level: "Moderate",
+         learning_style: {
+            processing: "Active",
+            perception: "Sensing",
+            input: "Visual",
+            understanding: "Sequential"
+         }
+      };
+      updateFormData({ onboard: defaultOnboard });
+      await sendOtpAndNavigate();
+   };
+
    const handleSubmit = async (e) => {
       e.preventDefault();
       
@@ -107,19 +136,7 @@ const OnboardingPage = () => {
 
       const onboardingResults = calculateScores();
       updateFormData({ onboard: onboardingResults });
-      
-      // Get updated formData after the update
-      const { formData: currentFormData } = useAuthStore.getState();
-      
-      if (currentFormData?.email) {
-         const success = await sendOTP(currentFormData.email);
-         if (success) {
-            navigate("/verify-email");
-         }
-      } else {
-         alert("Email not found. Please go back to signup.");
-         navigate("/signup");
-      }
+      await sendOtpAndNavigate();
    };
 
    return (
@@ -213,6 +230,11 @@ const OnboardingPage = () => {
                      ))}
                   </div>
 
+                  {error && (
+                     <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                        {error}
+                     </div>
+                  )}
                   <div className="flex justify-between">
                      <button
                         type="button"
@@ -221,20 +243,30 @@ const OnboardingPage = () => {
                      >
                         Back to Signup
                      </button>
-                     <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50 flex items-center"
-                     >
-                        {loading ? (
-                           <>
-                              <Loader className="animate-spin mr-2 h-4 w-4" />
-                              Sending OTP...
-                           </>
-                        ) : (
-                           "Complete & Send OTP"
-                        )}
-                     </button>
+                     <div className="flex gap-3">
+                        <button
+                           type="button"
+                           onClick={handleSkip}
+                           disabled={loading}
+                           className="px-6 py-2 border border-purple-300 text-purple-600 rounded-md hover:bg-purple-50 disabled:opacity-50"
+                        >
+                           Skip & Send OTP
+                        </button>
+                        <button
+                           type="submit"
+                           disabled={loading}
+                           className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50 flex items-center"
+                        >
+                           {loading ? (
+                              <>
+                                 <Loader className="animate-spin mr-2 h-4 w-4" />
+                                 Sending OTP...
+                              </>
+                           ) : (
+                              "Complete & Send OTP"
+                           )}
+                        </button>
+                     </div>
                   </div>
                </form>
             </div>

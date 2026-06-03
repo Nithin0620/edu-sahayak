@@ -16,12 +16,12 @@ import axios from 'axios';
 const BASE_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:4000"
-    : "https://edu-sahayak-ykp2.onrender.com";
+    : "https://edu-sahayak-u9qc.onrender.com";
 
 const Dashboard = () => {
   const cardsRef = useRef(null);
   const statsRef = useRef(null);
-  const [score, setScore] = useState([2, 10, 4, 3, 10]);
+  const [score, setScore] = useState([]);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
 
@@ -256,9 +256,16 @@ const Dashboard = () => {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             Quiz Performance
           </h2>
-          <div className="h-72">
-            <QuizBarChart scores={score} />
-          </div>
+          {
+            <div className="h-72 relative">
+              <QuizBarChart scores={score} />
+              {(!score || !score.some(s => s > 0)) && (
+                <p className="absolute inset-0 flex items-center justify-center text-red-500 font-medium">
+                  No quiz attempts
+                </p>
+              )}
+            </div>
+          }
         </div>
       </div>
 

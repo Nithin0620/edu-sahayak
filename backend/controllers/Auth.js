@@ -211,9 +211,9 @@ exports.sendOtp = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (user) {
-      return res.status(401).json({
+      return res.status(409).json({
         success: false,
-        message: "User already registered",
+        message: "This email is already registered. Please log in instead.",
       });
     }
 
