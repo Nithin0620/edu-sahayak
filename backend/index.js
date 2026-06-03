@@ -22,6 +22,7 @@ app.use(
         "https://edu-sahayak-tawny.vercel.app",      // deployed frontend
         "https://edu-sahayak-tawny.vercel.app/",     // deployed frontend with trailing slash
         "https://edu-sahayak-ykp2.onrender.com",    // deployed backend
+        "https://edu-sahayak-sezf.vercel.app",
         "https://edu-sahayak-sezf.vercel.app/",
         "https://edu-sahayak-u9qc.onrender.com/"
       ];
