@@ -2,11 +2,20 @@ const nodemailer = require("nodemailer")
 require("dotenv").config();
 
 exports.sendEmail = async(email,title,body)=>{
+   console.log(`[mailSender] 📋 Mail config:`, {
+      host: process.env.MAIL_HOST,
+      port: 587,
+      secure: false,
+      user: process.env.MAIL_USER,
+      from: process.env.MAIL_FROM || "nithin30302@gmail.com",
+      to: email,
+      subject: title
+   });
    try{
       const transporter = nodemailer.createTransport({
          host:process.env.MAIL_HOST,
-         port: 465,
-         secure: true,
+         port: 587,
+         secure: false,
          auth :{
             user: process.env.MAIL_USER,
             pass : process.env.MAIL_PASS
@@ -14,10 +23,10 @@ exports.sendEmail = async(email,title,body)=>{
       })
 
       const mailOptions = {
-         from :"Nithin",
+         from :`"EduSahayak" <${process.env.MAIL_FROM || "nithin30302@gmail.com"}>`,
          to:`${email}`,
          subject : `${title}`,
-         html:`<h1>${body}<h1/>`
+         html: body
       }
 
       console.log(`[mailSender] 📧 Sending email to: ${email}`);
