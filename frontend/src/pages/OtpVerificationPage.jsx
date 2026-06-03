@@ -28,8 +28,10 @@ const OtpVerificationPage = () => {
 
    const handleResend = async () => {
       if (formData?.email) {
+         console.log(`[OtpVerificationPage] Resending OTP to: ${formData.email}`);
          setResendMsg('');
          const success = await sendOTP(formData.email);
+         console.log(`[OtpVerificationPage] Resend result:`, success);
          if (success) {
             setResendMsg('Mail sent successfully');
          }

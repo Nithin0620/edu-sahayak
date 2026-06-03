@@ -96,10 +96,14 @@ const OnboardingPage = () => {
 
    const sendOtpAndNavigate = async () => {
       const { formData: currentFormData } = useAuthStore.getState();
+      console.log(`[OnboardingPage] sendOtpAndNavigate called, email:`, currentFormData?.email);
       
       if (currentFormData?.email) {
+         console.log(`[OnboardingPage] Calling sendOTP for: ${currentFormData.email}`);
          const success = await sendOTP(currentFormData.email);
+         console.log(`[OnboardingPage] sendOTP result:`, success);
          if (success) {
+            console.log(`[OnboardingPage] Navigating to /verify-email`);
             navigate("/verify-email");
          }
       } else {

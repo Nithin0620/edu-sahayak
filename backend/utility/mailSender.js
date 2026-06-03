@@ -18,10 +18,13 @@ exports.sendEmail = async(email,title,body)=>{
          html:`<h1>${body}<h1/>`
       }
 
+      console.log(`[mailSender] 📧 Sending email to: ${email}`);
       const response = await transporter.sendMail(mailOptions);
+      console.log(`[mailSender] ✅ Email sent to: ${email}`);
       return response ;
    }
    catch(e){
       console.log("Error occured in sending the mail in mailsender utility folder");
+      throw e;
    }
 }

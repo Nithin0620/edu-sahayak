@@ -75,21 +75,23 @@ const useAuthStore = create(
 
 
    sendOTP: async (email) => {
+      console.log(`[Auth Store] ➡️ Sending OTP request to: ${email}`);
       set({ loading: true, error: null });
       try {
-         // console.log("Sending OTP to:", email);
          const response = await axios.post(`${BASE_URL}/auth/send-otp`, { email });
-         // console.log("OTP Response:", response.data);
+         console.log(`[Auth Store] ✅ OTP response received:`, response.data);
          
          if (response.data?.success) {
+            console.log(`[Auth Store] ✅ OTP sent successfully to: ${email}`);
             set({ error: null });
             return true;
          } else {
+            console.log(`[Auth Store] ❌ OTP failed: ${response.data?.message}`);
             set({ error: response.data?.message || 'Failed to send OTP' });
             return false;
          }
       } catch (error) {
-         console.error("OTP Error:", error);
+         console.error(`[Auth Store] ❌ OTP Error for ${email}:`, error.response?.data || error.message);
          set({ 
             error: error.response?.data?.message || 'Failed to send OTP',
             loading: false 

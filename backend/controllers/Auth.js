@@ -201,8 +201,10 @@ exports.login = async (req, res) => {
 exports.sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
+    console.log(`[sendOtp] ➡️ Request received for email: ${email}`);
     
     if (!email) {
+      console.log(`[sendOtp] ❌ Email missing in request body`);
       return res.status(400).json({
         success: false,
         message: "Email is required",
@@ -211,12 +213,14 @@ exports.sendOtp = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (user) {
+      console.log(`[sendOtp] ❌ User already exists: ${email}`);
       return res.status(409).json({
         success: false,
         message: "This email is already registered. Please log in instead.",
       });
     }
 
+    console.log(`[sendOtp] 🔑 Generating OTP for: ${email}`);
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
@@ -233,8 +237,9 @@ exports.sendOtp = async (req, res) => {
       existingOtp = await OTP.findOne({ otp });
     }
 
+    console.log(`[sendOtp] 💾 Saving OTP to DB for: ${email}`);
     const response = await OTP.create({ email, otp });
-    // console.log("OTP created successfully:", { email, otp });
+    console.log(`[sendOtp] ✅ OTP saved & email sent successfully for: ${email}`);
 
     return res.status(200).json({
       success: true,
@@ -242,7 +247,7 @@ exports.sendOtp = async (req, res) => {
       data: response
     });
   } catch (error) {
-    console.error("Error in sendOtp:", error);
+    console.error(`[sendOtp] ❌ Error:`, error);
     return res.status(500).json({
       success: false,
       message: "Error while sending OTP",

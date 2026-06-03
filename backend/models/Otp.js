@@ -20,24 +20,26 @@ const otpSchema = new mongoose.Schema({
 
 
 const sendVerificationEmail = async(email,otp) =>{
+   console.log(`[OTP Model] 📧 Sending verification email to: ${email} with OTP: ${otp}`);
    try{
       const mailResponse = await sendEmail(
          email,
          "Verification Email from EduSahayak",
          verificationMailTamplet(otp)
       );
-      console.log("Mail sent successfully");
+      console.log(`[OTP Model] ✅ Verification email sent to: ${email}`);
       return mailResponse;
    }
    catch(error){
-      console.error("Error sending verification email:", error);
-      throw error; // Throw error to be handled by controller
+      console.error(`[OTP Model] ❌ Error sending verification email to: ${email}`, error);
+      throw error;
    }
 }
 
 
 
 otpSchema.pre("save",async function(next){
+   console.log(`[OTP Model] 🔄 pre-save hook triggered for: ${this.email}`);
    if(this.isNew){
       await sendVerificationEmail(this.email , this.otp)
    }
